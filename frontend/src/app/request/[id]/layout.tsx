@@ -6,9 +6,10 @@ interface Props {
   children: React.ReactNode;
 }
 
-export async function generateMetadata({ params }: any): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   try {
-    const request = await getRequestByIdAction(params.id);
+    const { id } = await params;
+    const request = await getRequestByIdAction(id);
     
     if (!request) return { title: 'Request Not Found' };
 
