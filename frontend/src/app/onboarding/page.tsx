@@ -1,17 +1,16 @@
 "use client";
 
-import { useUser, useSession } from '@clerk/nextjs';
+import { useProfile } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { getProfileAction } from '@/app/actions/donor.actions';
-import { useProfile } from '@/context/AuthContext';
+// AuthContext handles profile now
 import { ActivityService } from '@/services/activity.service';
 import { Droplet, MapPin, Phone, Heart, ArrowRight, ShieldCheck, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/Input';
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete';
 import { getCurrentPosition } from '@/lib/geolocation';
-import { createClerkSupabaseClient, supabaseClient } from '@/lib/supabase/client';
+import { supabaseClient } from '@/lib/supabase/client';
 import { saveOnboardingProfile } from './actions';
 
 // --- Hallmark Stamp ---
@@ -48,19 +47,21 @@ const fadeInUp = {
 };
 
 export default function OnboardingPage() {
-    const { user, isLoaded } = useUser();
-    const { session } = useSession();
-    const { refetch } = useProfile();
+    const { user, profile: authProfile, isLoading: authLoading, refetch } = useProfile();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isLoaded || !user) return;
-        getProfileAction()
-            .then((p: any) => { if (p?.profile_completed) router.replace("/dashboard"); })
-            .catch(() => {});
-    }, [isLoaded, user, router]);
+        if (authLoading) return;
+        if (!user) {
+            router.replace("/login");
+            return;
+        }
+        if (authProfile?.profile_completed) {
+            router.replace("/dashboard");
+        }
+    }, [authLoading, user, authProfile, router]);
 
     const [formData, setFormData] = useState({
         blood_group: '',
@@ -102,7 +103,7 @@ export default function OnboardingPage() {
 
             console.log('[onboarding:page] Calling saveOnboardingProfile...');
             await saveOnboardingProfile({
-                full_name: user.fullName || 'Anonymous User',
+                full_name: user?.user_metadata?.full_name || user?.email || 'Anonymous User',
                 blood_group: formData.blood_group,
                 phone: formData.phone,
                 city: formData.location,
@@ -113,9 +114,7 @@ export default function OnboardingPage() {
             });
             console.log('[onboarding:page] ✔ saveOnboardingProfile resolved');
 
-            console.log('[onboarding:page] Calling user.reload()...');
-            await user.reload();
-            console.log('[onboarding:page] ✔ user.reload() done. publicMetadata:', user.publicMetadata);
+            console.log('[onboarding:page] ✔ profile updated in DB');
 
             console.log('[onboarding:page] Calling refetch()...');
             await refetch();
@@ -131,7 +130,7 @@ export default function OnboardingPage() {
         }
     };
 
-    if (!isLoaded) {
+    if (authLoading || (authProfile?.profile_completed && !loading)) {
         return (
             <div className="min-h-[100dvh] flex items-center justify-center font-sans antialiased" style={{ ...customTokens, backgroundColor: "var(--color-paper)", color: "var(--color-ink)" }}>
                 <div className="w-8 h-8 rounded-sm border-2 animate-spin" style={{ borderColor: "var(--color-rule)", borderTopColor: "var(--color-accent)" }} />

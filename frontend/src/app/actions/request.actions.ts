@@ -1,13 +1,13 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export async function getActiveRequestsAction() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabase
         .from('blood_requests')
         .select(`
             *,
@@ -23,10 +23,11 @@ export async function getActiveRequestsAction() {
 }
 
 export async function getRequestByIdAction(requestId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabase
         .from('blood_requests')
         .select('*')
         .eq('id', requestId)
@@ -37,21 +38,22 @@ export async function getRequestByIdAction(requestId: string) {
 }
 
 export async function updateRequestAction(requestId: string, updateData: any) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     // Enforce that only the requester can update it
-    const { data: requestCheck } = await supabaseServer
+    const { data: requestCheck } = await supabase
         .from('blood_requests')
         .select('requester_id')
         .eq('id', requestId)
         .single();
 
-    if (requestCheck?.requester_id !== userId) {
+    if (requestCheck?.requester_id !== user.id) {
         throw new Error("Unauthorized: You can only update your own requests.");
     }
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabase
         .from('blood_requests')
         .update(updateData)
         .eq('id', requestId)
@@ -63,10 +65,11 @@ export async function updateRequestAction(requestId: string, updateData: any) {
 }
 
 export async function getUserRequestsAction() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabase
         .from('blood_requests')
         .select(`
             *,
@@ -75,7 +78,7 @@ export async function getUserRequestsAction() {
                 profiles (full_name, phone, blood_group)
             )
         `)
-        .eq('requester_id', userId)
+        .eq('requester_id', user.id)
         .order('created_at', { ascending: false });
 
     if (error) throw new Error(`Failed to fetch user requests: ${error.message}`);

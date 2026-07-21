@@ -16,30 +16,17 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - BACKEND_URL=http://backend:8000
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-    depends_on:
-      - backend
-
-  backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
       - MATCHING_ENGINE_URL=http://matching-engine:9000
     depends_on:
-      - db
       - matching-engine
+
+
 
   matching-engine:
     build: ./matching-engine

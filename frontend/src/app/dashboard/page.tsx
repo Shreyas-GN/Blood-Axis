@@ -1,7 +1,7 @@
 /* Hallmark · genre: modern-minimal · macrostructure: Bento Grid · theme: Cobalt · enrichment: A · nav: N5 · footer: Ft2 */
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getProfileAction, getResponsesForDonorAction, submitDonorResponseAction } from "@/app/actions/donor.actions";
@@ -39,7 +39,7 @@ function isToday(date: Date): boolean {
 }
 
 export default function DashboardPage() {
-    const { user, isLoaded } = useUser();
+    const { user, profile: authProfile, isLoading: authLoading } = useProfile();
     const router = useRouter();
     useRealtimeAlerts();
 
@@ -73,8 +73,8 @@ export default function DashboardPage() {
     }, [user?.id]);
 
     useEffect(() => {
-        if (!isLoaded) return;
-        if (!user) { router.push("/"); return; }
+        if (authLoading) return;
+        if (!user) { router.push("/login"); return; }
         fetchData();
 
         const channel = supabaseClient
@@ -84,7 +84,7 @@ export default function DashboardPage() {
             .subscribe();
 
         return () => { supabaseClient.removeChannel(channel); };
-    }, [isLoaded, user, fetchData, router]);
+    }, [authLoading, user, fetchData, router]);
 
     const handleAccept = async (requestId: any) => {
         setAcceptingId(requestId);
@@ -123,7 +123,7 @@ export default function DashboardPage() {
 
     const { open: cmdOpen, setOpen: setCmdOpen } = useCommandPalette();
 
-    if (!isLoaded || loading) return <div className="min-h-screen bg-[var(--color-bg)]" />;
+    if (authLoading || loading) return <div className="min-h-screen bg-[var(--color-bg)]" />;
 
     const donateRequests = profile?.is_available_donor ? allRequests.filter(
         (r) =>

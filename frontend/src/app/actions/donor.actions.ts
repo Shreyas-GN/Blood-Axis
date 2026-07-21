@@ -1,65 +1,41 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export async function getProfileAction() {
-    const { userId, getToken } = await auth();
-    if (!userId) return null;
-    const token = await getToken();
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) return null;
+    
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
-    const response = await fetch(`${backendUrl}/api/profiles/${userId}/`, {
-        method: 'GET',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        cache: 'no-store',
-    });
-
-    if (response.status === 404) return null;
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Failed to fetch profile: ${errText}`);
-    }
-    const data = await response.json();
+    if (error || !data) return null;
     return data;
 }
 
 export async function updateProfileAction(profileData: any) {
-    const { userId, getToken } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-    const token = await getToken();
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     // 1. Update Supabase for PostGIS geographic matching to keep it in sync
-    const { error } = await supabaseServer
+    const { error, data } = await supabase
         .from('profiles')
-        .upsert({ id: userId, ...profileData })
+        .upsert({ id: user.id, ...profileData })
         .select()
         .single();
 
     if (error) {
         console.error("Supabase update failed:", error);
+        throw new Error(`Failed to update profile: ${error.message}`);
     }
 
-    // 2. Update Django SQLite for the UI to read correctly
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
-    const response = await fetch(`${backendUrl}/api/profiles/${userId}/`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(profileData)
-    });
-
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Failed to update profile: ${errText}`);
-    }
-
-    return await response.json();
+    // We skip Django update since we are migrating to Supabase as single source of truth.
+    return data;
 }
 
 
@@ -69,8 +45,9 @@ export async function submitDonorResponseAction(
     distanceMeters?: number | null,
     etaMinutes?: number | null
 ) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     const { data, error } = await supabaseServer
         .from('donor_responses')
@@ -97,8 +74,9 @@ export async function submitDonorResponseAction(
 }
 
 export async function getResponsesForRequestAction(requestId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     // We can enforce that only the requester or a responder can view these
     // But since it's a server action, the service role bypasses RLS.
@@ -116,13 +94,14 @@ export async function getResponsesForRequestAction(requestId: string) {
 }
 
 export async function cancelResponseAction(requestId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     const { data, error } = await supabaseServer
         .from('donor_responses')
         .update({ status: 'CANCELLED' })
-        .match({ request_id: requestId, donor_id: userId })
+        .match({ request_id: requestId, donor_id: user.id })
         .select()
         .single();
 
@@ -131,8 +110,9 @@ export async function cancelResponseAction(requestId: string) {
 }
 
 export async function getNearbyDonorsAction(reqLat: number, reqLng: number, radiusKm: number, reqBloodGroup: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     const { data, error } = await supabaseServer.rpc('find_nearby_donors_v2', {
         req_lat: reqLat,
@@ -146,13 +126,14 @@ export async function getNearbyDonorsAction(reqLat: number, reqLng: number, radi
 }
 
 export async function getResponsesForDonorAction() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error("Unauthorized");
 
     const { data, error } = await supabaseServer
         .from('donor_responses')
         .select('request_id, status')
-        .eq('donor_id', userId);
+        .eq('donor_id', user.id);
 
     if (error) throw new Error(`Failed to fetch donor responses: ${error.message}`);
     return data;

@@ -1,50 +1,73 @@
-import { auth } from '@clerk/nextjs/server';
+import { supabaseServer } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
     try {
-        // 1. Get Clerk token for backend authentication
-        let token = 'mock-token-123';
-        try {
-            const { getToken } = await auth();
-            const clerkToken = await getToken();
-            if (clerkToken) {
-                token = clerkToken;
-            }
-        } catch (e) {
-            console.log("Clerk auth() bypassed in local dev mode:", e);
+        // 1. Authenticate with Supabase
+        const supabase = await supabaseServer();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const body = await req.json();
         
-        // 2. Forward the request to the Django Backend
-        // Inside the Docker network, we use the service name 'backend'
-        const DJANGO_BACKEND_URL = process.env.BACKEND_URL || 'http://backend:8000';
-        
-        const response = await fetch(`${DJANGO_BACKEND_URL}/api/requests/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(body),
-        });
+        // Ensure requester_id is set
+        const payload = {
+            ...body,
+            requester_id: user.id
+        };
 
-        const data = await response.json();
+        // 2. Insert the request into Supabase directly
+        const { data: requestRecord, error: insertError } = await supabase
+            .from('blood_requests')
+            .insert(payload)
+            .select()
+            .single();
 
-        if (!response.ok) {
-            console.error('Backend error:', data);
+        if (insertError) {
+            console.error('Supabase insert error:', insertError);
             return NextResponse.json(
-                { error: data.error || 'Backend failed to process request' }, 
-                { status: response.status }
+                { error: insertError.message || 'Failed to save request' }, 
+                { status: 500 }
             );
         }
 
-        // 3. Return the response from Django (which includes matching engine status)
+        // 3. Trigger Matching Engine directly
+        let matching_triggered = false;
+        let matching_engine_response = null;
+
+        if (requestRecord.latitude && requestRecord.longitude) {
+            const MATCHING_ENGINE_URL = process.env.MATCHING_ENGINE_URL || 'http://matching-engine:9000';
+            try {
+                const matchResponse = await fetch(`${MATCHING_ENGINE_URL}/match-donors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        blood_group: requestRecord.blood_group,
+                        latitude: requestRecord.latitude,
+                        longitude: requestRecord.longitude,
+                        hospital_name: requestRecord.hospital_name,
+                        units_required: requestRecord.units,
+                        request_id: requestRecord.id,
+                    })
+                });
+
+                if (matchResponse.ok) {
+                    matching_triggered = true;
+                    matching_engine_response = await matchResponse.json();
+                } else {
+                    console.error('Matching engine returned error status:', matchResponse.status);
+                }
+            } catch (err) {
+                console.error('Failed to trigger matching engine:', err);
+            }
+        }
+
         return NextResponse.json({ 
             success: true, 
-            request: data.request,
-            matching: data.matching_triggered 
+            request: requestRecord,
+            matching: matching_triggered 
         });
 
     } catch (error: any) {

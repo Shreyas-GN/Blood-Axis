@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { getProfileAction, updateProfileAction } from "@/app/actions/donor.actions";
 import Link from "next/link";
@@ -133,7 +133,7 @@ function InfoRow({
 
 /* ── Page ─────────────────────────────────────────────────── */
 export default function ProfilePage() {
-    const { user, isLoaded } = useUser();
+    const { user, profile: authProfile, isLoading: authLoading } = useProfile();
     const router = useRouter();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -145,8 +145,8 @@ export default function ProfilePage() {
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isLoaded) return;
-        if (!user) { router.push("/"); return; }
+        if (authLoading) return;
+        if (!user) { router.push("/login"); return; }
 
         getProfileAction()
             .then((p: any) => {
@@ -155,7 +155,7 @@ export default function ProfilePage() {
             })
             .catch(() => {})
             .finally(() => setLoading(false));
-    }, [isLoaded, user, router]);
+    }, [authLoading, user, router]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -186,11 +186,11 @@ export default function ProfilePage() {
         }
     };
 
-    if (!isLoaded || loading) return <ProfileSkeleton />;
+    if (authLoading || loading) return <ProfileSkeleton />;
     if (!profile) return null;
 
     const displayName = profile.full_name ||
-        `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+        user?.user_metadata?.full_name || user?.email ||
         "Your Profile";
     const initials = displayName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
     const memberSince = profile.created_at
@@ -254,7 +254,7 @@ export default function ProfilePage() {
                                     {displayName}
                                 </h1>
                                 <p className="text-[13px] text-[var(--color-text-muted)] truncate mt-0.5">
-                                    {user?.primaryEmailAddress?.emailAddress}
+                                    {user?.email}
                                 </p>
                                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                                     {profile.blood_group && (

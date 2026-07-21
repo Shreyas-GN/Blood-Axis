@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk, Space_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs';
 import { AuthProvider } from '@/context/AuthContext';
 
 const geistSans = Geist({
@@ -107,37 +106,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-          colorPrimary: '#0055FF',
-          colorBackground: '#FCFCFB',
-          colorText: '#18181B',
-          colorDanger: '#DC2626',
-          fontFamily: 'var(--font-inter), sans-serif',
-          borderRadius: '6px'
-        },
-        elements: {
-          card: 'shadow-none border border-[#E4E4E7]',
-          formButtonPrimary: 'hover:scale-[1.01] transition-all',
-          formFieldInput: 'border-[#E4E4E7] focus:border-[#0055FF] focus:ring-[#0055FF]'
-        }
-      }}
-    >
-      <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
-        <head>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            suppressHydrationWarning
-          />
-        </head>
-        <body className="antialiased">
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          suppressHydrationWarning
+        />
+      </head>
+      <body className="antialiased">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

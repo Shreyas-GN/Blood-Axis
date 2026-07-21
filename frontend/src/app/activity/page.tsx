@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -40,21 +40,15 @@ function ActivitySkeleton() {
 }
 
 export default function ActivityPage() {
-    const { user, isLoaded } = useUser();
+    const { user, profile, isLoading: authLoading } = useProfile();
     const router = useRouter();
-    const [profileId, setProfileId] = useState<string | null>(null);
-    const [profileLoading, setProfileLoading] = useState(true);
 
     useEffect(() => {
-        if (!isLoaded) return;
-        if (!user) { router.push("/"); return; }
-        DonorService.getProfile(user.id)
-            .then((p) => setProfileId(p?.id ?? null))
-            .catch(() => setProfileId(null))
-            .finally(() => setProfileLoading(false));
-    }, [isLoaded, user, router]);
+        if (authLoading) return;
+        if (!user) { router.push("/login"); return; }
+    }, [authLoading, user, router]);
 
-    if (!isLoaded || profileLoading) return <ActivitySkeleton />;
+    if (authLoading || (!profile && user)) return <ActivitySkeleton />;
 
     return (
         <div className="min-h-[100dvh] bg-[var(--color-bg)] text-[var(--color-text-primary)] pb-24 md:pb-0">
@@ -93,8 +87,8 @@ export default function ActivityPage() {
                     </p>
                 </div>
 
-                {profileId ? (
-                    <ActivityTimeline userId={profileId} limit={50} compact />
+                {profile?.id ? (
+                    <ActivityTimeline userId={profile.id} limit={50} compact />
                 ) : (
                     <div className="card-base">
                         <EmptyStateActivity />
