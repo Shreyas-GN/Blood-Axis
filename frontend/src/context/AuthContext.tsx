@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabaseClient } from "@/lib/supabase/client";
 import { getProfileAction, updateProfileAction } from "@/app/actions/donor.actions";
 import type { User } from "@/types";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 interface AuthContextValue {
     user: SupabaseUser | null;
@@ -12,6 +12,7 @@ interface AuthContextValue {
     isLoading: boolean;
     refetch: () => Promise<void>;
     updateProfile: (data: Partial<User>) => Promise<void>;
+    signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Listen for auth changes
         const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
-            async (_event, session) => {
+            async (_event: AuthChangeEvent, session: Session | null) => {
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
                 await fetchProfile(currentUser);
@@ -80,7 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             profile, 
             isLoading, 
             refetch: () => fetchProfile(user),
-            updateProfile 
+            updateProfile,
+            signOut: async () => { await supabaseClient.auth.signOut(); }
         }}>
             {children}
         </AuthContext.Provider>

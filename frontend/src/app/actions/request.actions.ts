@@ -3,7 +3,7 @@
 import { supabaseServer } from "@/lib/supabase/server";
 
 export async function getActiveRequestsAction() {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -23,7 +23,7 @@ export async function getActiveRequestsAction() {
 }
 
 export async function getRequestByIdAction(requestId: string) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -38,7 +38,7 @@ export async function getRequestByIdAction(requestId: string) {
 }
 
 export async function updateRequestAction(requestId: string, updateData: any) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -65,7 +65,7 @@ export async function updateRequestAction(requestId: string, updateData: any) {
 }
 
 export async function getUserRequestsAction() {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 

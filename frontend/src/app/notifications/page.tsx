@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
@@ -56,7 +56,7 @@ function NotificationsSkeleton() {
 }
 
 export default function NotificationsPage() {
-    const { user, isLoaded } = useUser();
+    const { user, isLoading: isLoaded } = useProfile();
     const router = useRouter();
     const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
 

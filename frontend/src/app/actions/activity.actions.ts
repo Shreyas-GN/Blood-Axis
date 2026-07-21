@@ -8,12 +8,12 @@ export async function logActivityAction(
     description: string,
     requestId?: string | null
 ) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) return; // Silent fail if unauthorized for activities
 
     try {
-        const { error } = await supabaseServer
+        const { error } = await supabase
             .from('activities')
             .insert({
                 user_id: user.id,
@@ -28,7 +28,7 @@ export async function logActivityAction(
 }
 
 export async function getRecentActivitiesAction() {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 

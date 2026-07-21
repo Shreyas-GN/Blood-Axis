@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Droplet, MapPin, ArrowRight, Shield, CheckCircle2, Heart, Zap, FileText, Users, Clock, Search } from "lucide-react";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
+const SignedIn = ({ children }: { children: React.ReactNode }) => { const { user } = useProfile(); return user ? <>{children}</> : null; };
+const SignedOut = ({ children }: { children: React.ReactNode }) => { const { user } = useProfile(); return !user ? <>{children}</> : null; };
 import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ActivityFeedPreview } from "@/components/landing/ActivityFeedPreview";

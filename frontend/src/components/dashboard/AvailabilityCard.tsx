@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { updateProfileAction } from "@/app/actions/donor.actions";
 import { logActivityAction } from "@/app/actions/activity.actions";
 import type { User } from "@/types";
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function AvailabilityCard({ profile, onToggle }: Props) {
-    const { user } = useUser();
+    const { user, profile: authProfile, isLoading: isLoaded } = useProfile();
     const [isAvailable, setIsAvailable] = useState(profile?.is_available_donor ?? false);
     const [loading, setLoading] = useState(false);
 

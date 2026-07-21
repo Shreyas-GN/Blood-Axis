@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -36,7 +36,7 @@ interface Props {
 }
 
 export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Props) {
-    const { user, isLoaded } = useUser();
+    const { user, isLoading: isLoaded } = useProfile();
     const router = useRouter();
 
     const [request, setRequest] = useState<any | null>(null);

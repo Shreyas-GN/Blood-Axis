@@ -2,11 +2,10 @@
 
 import { useEffect, useCallback } from 'react';
 import { subscribeToChannel, unsubscribeFromChannel } from '@/lib/supabase/realtime';
-import { useUser } from '@clerk/nextjs';
-import { useProfile } from '@/context/AuthContext';
+import { useProfile } from "@/context/AuthContext";
 
 export function useRealtimeAlerts() {
-    const { user } = useUser();
+    const { user } = useProfile();
     const { profile } = useProfile();
 
     const requestPermission = useCallback(async () => {

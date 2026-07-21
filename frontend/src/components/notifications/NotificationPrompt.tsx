@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { useProfile } from '@/context/AuthContext';
+import { useProfile } from "@/context/AuthContext";
 import { registerForPushNotifications } from '@/lib/firebase/messaging';
 import { Bell, X, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function NotificationPrompt() {
-    const { user } = useUser();
-    const { profile } = useProfile();
+    const { user, profile, isLoading: isLoaded } = useProfile();
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);

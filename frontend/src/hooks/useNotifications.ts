@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import type { Notification } from "@/types";
 
 const POLL_INTERVAL_MS = 20_000;
@@ -17,7 +17,7 @@ interface UseNotificationsReturn {
 }
 
 export function useNotifications(): UseNotificationsReturn {
-    const { user } = useUser();
+    const { user } = useProfile();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);

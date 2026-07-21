@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { logActivityAction } from "@/app/actions/activity.actions";
 import {
   ArrowLeft,
@@ -97,7 +97,7 @@ const slideVariants = {
 
 export default function RequestWizardPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useProfile();
 
   // Step 0 = AI parser, 1–5 = wizard, 6 = OTP
   const [currentStep, setCurrentStep] = useState(0);

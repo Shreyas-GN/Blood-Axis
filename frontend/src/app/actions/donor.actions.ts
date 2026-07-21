@@ -3,7 +3,7 @@
 import { supabaseServer } from "@/lib/supabase/server";
 
 export async function getProfileAction() {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) return null;
     
@@ -18,7 +18,7 @@ export async function getProfileAction() {
 }
 
 export async function updateProfileAction(profileData: any) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -45,7 +45,7 @@ export async function submitDonorResponseAction(
     distanceMeters?: number | null,
     etaMinutes?: number | null
 ) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -53,7 +53,7 @@ export async function submitDonorResponseAction(
         .from('donor_responses')
         .upsert({
             request_id: requestId,
-            donor_id: userId,
+            donor_id: user.id,
             status: status,
             distance_meters: distanceMeters,
             eta_minutes: etaMinutes,
@@ -74,7 +74,7 @@ export async function submitDonorResponseAction(
 }
 
 export async function getResponsesForRequestAction(requestId: string) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -94,7 +94,7 @@ export async function getResponsesForRequestAction(requestId: string) {
 }
 
 export async function cancelResponseAction(requestId: string) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -110,7 +110,7 @@ export async function cancelResponseAction(requestId: string) {
 }
 
 export async function getNearbyDonorsAction(reqLat: number, reqLng: number, radiusKm: number, reqBloodGroup: string) {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 
@@ -126,7 +126,7 @@ export async function getNearbyDonorsAction(reqLat: number, reqLng: number, radi
 }
 
 export async function getResponsesForDonorAction() {
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) throw new Error("Unauthorized");
 

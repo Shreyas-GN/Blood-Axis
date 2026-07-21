@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import Link from "next/link";
 import { ArrowLeft, Droplet } from "lucide-react";
 import { RequestService } from "@/services/request.service";
@@ -104,7 +104,7 @@ function deriveEta(status: string, elapsedMs: number): string {
 export default function EmergencyMapPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { user, isLoading: isLoaded } = useProfile();
 
   const [request,          setRequest]          = useState<BloodRequest | null>(null);
   const [donorMarkers,     setDonorMarkers]      = useState<DonorMarkerData[]>([]);

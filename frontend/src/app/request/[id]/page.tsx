@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { getProfileAction, getNearbyDonorsAction, getResponsesForRequestAction, submitDonorResponseAction } from "@/app/actions/donor.actions";
 import { getRequestByIdAction, updateRequestAction } from "@/app/actions/request.actions";
 import {
@@ -66,7 +66,7 @@ function deriveRadius(elapsedMs: number): number {
 export default function RequestDetailPage() {
   const params   = useParams();
   const router   = useRouter();
-  const { user, isLoaded } = useUser();
+  const { user, profile: authProfile, isLoading: isLoaded } = useProfile();
 
   const [request,            setRequest]            = useState<BloodRequest | null>(null);
   const [donors,             setDonors]             = useState<MatchingDonor[]>([]);

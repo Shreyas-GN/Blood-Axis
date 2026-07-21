@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useProfile } from "@/context/AuthContext";
 import { getRequestByIdAction, updateRequestAction } from '@/app/actions/request.actions';
 import { AlertCircle, MapPin, Phone, User, Droplet, ArrowLeft, Save, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -32,7 +32,7 @@ const fadeInUp = {
 export default function EditRequestPage() {
     const params = useParams();
     const router = useRouter();
-    const { user, isLoaded } = useUser();
+    const { user, isLoading: isLoaded } = useProfile();
     
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);

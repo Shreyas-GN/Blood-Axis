@@ -192,7 +192,7 @@ export default function ProfilePage() {
     const displayName = profile.full_name ||
         user?.user_metadata?.full_name || user?.email ||
         "Your Profile";
-    const initials = displayName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+    const initials = displayName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
     const memberSince = profile.created_at
         ? new Date(profile.created_at).toLocaleDateString("en-IN", { month: "long", year: "numeric" })
         : null;
@@ -231,9 +231,9 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-4">
                             {/* Avatar */}
                             <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)]">
-                                {user?.imageUrl ? (
+                                {user?.user_metadata?.avatar_url ? (
                                     <img
-                                        src={user.imageUrl}
+                                        src={user.user_metadata.avatar_url}
                                         alt={`${displayName}'s profile`}
                                         className="w-full h-full object-cover"
                                     />

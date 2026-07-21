@@ -16,7 +16,7 @@ export async function saveOnboardingProfile(data: {
 }) {
     console.log('[onboarding:action] ▶ saveOnboardingProfile called');
 
-    const supabase = await supabaseServer();
+    const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user?.id) throw new Error("Unauthorized");
@@ -25,7 +25,7 @@ export async function saveOnboardingProfile(data: {
 
     const profileData = {
         full_name: data.full_name,
-        blood_group: data.blood_group,
+        blood_group: data.blood_group as any,
         phone: data.phone,
         city: data.city,
         is_available_donor: data.is_available_donor,

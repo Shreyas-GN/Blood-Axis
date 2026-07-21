@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight, Droplet, Edit2, Power } from "lucide-react";
@@ -97,8 +97,7 @@ function Row({
 }
 
 export default function SettingsPage() {
-    const { user, isLoaded } = useUser();
-    const { signOut } = useClerk();
+    const { user, profile: authProfile, isLoading: isLoaded, signOut } = useProfile();
     const router = useRouter();
 
     const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -132,10 +131,10 @@ export default function SettingsPage() {
                 if (profileData) {
                     setProfile({
                         id: 1,
-                        first_name: profileData.full_name?.split(" ")[0] || user.firstName || "",
+                        first_name: profileData.full_name?.split(" ")[0] || user.user_metadata?.full_name?.split(" ")[0] || "",
                         last_name:
                             profileData.full_name?.split(" ").slice(1).join(" ") ||
-                            user.lastName ||
+                            user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
                             "",
                         blood_group: profileData.blood_group ?? "",
                         city: profileData.location || "",
@@ -184,8 +183,8 @@ export default function SettingsPage() {
                 ? { ...p, is_available_donor: checked }
                 : {
                       id: 1,
-                      first_name: user.firstName || "",
-                      last_name: user.lastName || "",
+                      first_name: user.user_metadata?.full_name?.split(" ")[0] || "",
+                      last_name: user.user_metadata?.full_name?.split(" ").slice(1).join(" ") || "",
                       blood_group: "",
                       city: "",
                       phone_number: "",
@@ -215,8 +214,8 @@ export default function SettingsPage() {
                     ? { ...p, city: profileFormData.city, blood_group: profileFormData.blood_group }
                     : {
                           id: 1,
-                          first_name: user.firstName || "",
-                          last_name: user.lastName || "",
+                          first_name: user.user_metadata?.full_name?.split(" ")[0] || "",
+                          last_name: user.user_metadata?.full_name?.split(" ").slice(1).join(" ") || "",
                           blood_group: profileFormData.blood_group,
                           city: profileFormData.city,
                           phone_number: "",
@@ -268,8 +267,8 @@ export default function SettingsPage() {
     const displayName =
         profile?.first_name && profile?.last_name
             ? `${profile.first_name} ${profile.last_name}`
-            : user?.firstName
-            ? `${user.firstName} ${user.lastName || ""}`.trim()
+            : user?.user_metadata?.full_name
+            ? user.user_metadata.full_name
             : "My Profile";
 
     const memberSince = profile?.date_joined
@@ -307,9 +306,9 @@ export default function SettingsPage() {
                 {/* ── Profile hero ───────────────────────────────────────── */}
                 <div className="card-base p-6 flex items-center gap-5">
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-[var(--color-base-100)] shrink-0 border border-[var(--color-border)]">
-                        {user?.imageUrl ? (
+                        {user?.user_metadata?.avatar_url ? (
                             <img
-                                src={user.imageUrl}
+                                src={user.user_metadata.avatar_url}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                             />
@@ -322,7 +321,7 @@ export default function SettingsPage() {
                     <div className="min-w-0">
                         <p className="text-[17px] font-bold text-[var(--color-text-primary)] truncate">{displayName}</p>
                         <p className="text-[13px] text-[var(--color-text-muted)] truncate mt-0.5">
-                            {user?.primaryEmailAddress?.emailAddress}
+                            {user?.email}
                         </p>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                             {profile?.blood_group && (
@@ -564,7 +563,7 @@ export default function SettingsPage() {
                 {/* ── Account ────────────────────────────────────────────── */}
                 <Section title="Account">
                     <button
-                        onClick={() => signOut(() => router.push("/"))}
+                        onClick={() => signOut().then(() => router.push("/"))}
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-[var(--color-bg)] transition-colors group"
                     >
                         <div className="flex items-center gap-3">
