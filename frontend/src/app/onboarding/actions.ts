@@ -18,9 +18,10 @@ export async function saveOnboardingProfile(data: {
 }) {
     console.log('[onboarding:action] ▶ saveOnboardingProfile called', { userId: 'resolving...' });
 
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     console.log('[onboarding:action] Auth resolved → userId:', userId);
     if (!userId) throw new Error("Unauthorized");
+    const token = await getToken();
 
     const profileData = {
         full_name: data.full_name,
@@ -35,15 +36,22 @@ export async function saveOnboardingProfile(data: {
         location: data.location,
     };
 
-    console.log('[onboarding:action] Attempting Supabase upsert for userId:', userId, profileData);
+    console.log('[onboarding:action] Attempting Django upsert for userId:', userId, profileData);
 
-    const { error: upsertError } = await (supabaseServer as any)
-        .from('profiles')
-        .upsert({ id: userId, ...profileData }, { onConflict: 'id' });
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const response = await fetch(`${backendUrl}/api/profiles/upsert/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: userId, ...profileData })
+    });
 
-    if (upsertError) {
-        console.error('[onboarding:action] ✖ Supabase upsert failed:', JSON.stringify(upsertError, null, 2));
-        throw new Error(`Failed to save profile: ${upsertError.message}`);
+    if (!response.ok) {
+        const errText = await response.text();
+        console.error('[onboarding:action] ✖ Backend upsert failed:', errText);
+        throw new Error(`Failed to save profile: ${errText}`);
     }
 
     console.log('[onboarding:action] ✔ Supabase upsert succeeded');

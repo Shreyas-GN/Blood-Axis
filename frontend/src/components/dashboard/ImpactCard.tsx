@@ -42,17 +42,17 @@ export function ImpactCard({ label, value, icon: Icon }: ImpactCardProps) {
             variants={slideUpFade}
             initial="hidden"
             animate="visible"
-            className="bg-white rounded-[28px] border border-[#ECECEC] shadow-[0_8px_30px_rgba(0,0,0,0.05)] p-5 flex flex-col justify-between min-h-[104px]"
+            className="flex flex-col justify-between h-full min-h-[120px] bg-[var(--color-bg-elevated)]"
         >
-            <div className="flex items-center justify-between mb-2">
-                <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider leading-tight">
+            <div className="flex items-center justify-between mb-4">
+                <p className="text-[11px] font-metric text-[var(--color-text-muted)] uppercase tracking-widest leading-tight">
                     {label}
                 </p>
-                <div className="w-7 h-7 rounded-xl bg-[#F4F4F4] flex items-center justify-center shrink-0">
-                    <Icon className="w-3.5 h-3.5 text-[#737373]" />
+                <div className="w-6 h-6 rounded flex items-center justify-center shrink-0 border border-[var(--color-border)] bg-[var(--color-bg)]">
+                    <Icon className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
                 </div>
             </div>
-            <p className="text-[2rem] font-bold font-mono text-[#1E1E1E] tracking-tight leading-none">
+            <p className="text-4xl font-metric font-medium text-[var(--color-text-primary)] tracking-tight leading-none">
                 {count}
             </p>
         </motion.div>

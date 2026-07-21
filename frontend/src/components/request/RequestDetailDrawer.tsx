@@ -239,7 +239,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                 <div className="space-y-5">
                                     {/* Skeleton for case card */}
                                     <div className="h-10 w-32 bg-[var(--color-base-100)] rounded-[var(--radius-card)] animate-pulse" />
-                                    <div className="bg-white border border-[var(--color-base-200)] rounded-[var(--radius-card)] p-5 space-y-4">
+                                    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-base-200)] rounded-[var(--radius-card)] p-5 space-y-4">
                                         <div className="flex items-start gap-4">
                                             <div className="w-16 h-16 rounded-[var(--radius-card)] bg-[var(--color-base-100)] animate-pulse shrink-0" />
                                             <div className="flex-1 space-y-2 py-1">
@@ -307,7 +307,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                                 rel="noopener noreferrer"
                                                 className="flex-1"
                                             >
-                                                <button className="w-full h-10 bg-white border border-[var(--color-base-200)] text-[var(--color-base-900)] font-bold rounded-[var(--radius-card)] flex items-center justify-center gap-2 text-sm clay-button-hover">
+                                                <button className="w-full h-10 bg-[var(--color-bg-elevated)] border border-[var(--color-base-200)] text-[var(--color-base-900)] font-bold rounded-[var(--radius-card)] flex items-center justify-center gap-2 text-sm clay-button-hover">
                                                     <MapPin className="w-4 h-4" /> Directions
                                                 </button>
                                             </a>
@@ -315,10 +315,10 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                     )}
 
                                     {/* Case card */}
-                                    <div className="bg-white border border-[var(--color-base-200)] rounded-[var(--radius-card)] shadow-[var(--shadow-clay)] overflow-hidden relative">
+                                    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-base-200)] rounded-[var(--radius-card)] shadow-[var(--shadow-clay)] overflow-hidden relative">
                                         {isClosed && (
-                                            <div className="absolute inset-0 bg-white/75 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                                                <div className="bg-white border border-[var(--color-base-200)] px-4 py-2.5 rounded-[var(--radius-card)] shadow-[var(--shadow-clay)] flex items-center gap-2.5">
+                                            <div className="absolute inset-0 bg-[var(--color-bg)]/75 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                                                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-base-200)] px-4 py-2.5 rounded-[var(--radius-card)] shadow-[var(--shadow-clay)] flex items-center gap-2.5">
                                                     {String(request.status) === "cancelled" ? (
                                                         <><AlertCircle className="w-4 h-4 text-[var(--color-base-400)]" /><span className="font-bold text-[var(--color-base-900)] text-sm">Cancelled</span></>
                                                     ) : (
@@ -450,7 +450,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                             className="bg-[var(--color-safe-light)] border border-emerald-200 rounded-[var(--radius-card)] p-5"
                                         >
                                             <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-8 h-8 rounded-[var(--radius-input)] bg-white border border-emerald-200 flex items-center justify-center shrink-0">
+                                                <div className="w-8 h-8 rounded-[var(--radius-input)] bg-[var(--color-bg-elevated)] border border-emerald-200 flex items-center justify-center shrink-0">
                                                     <CheckCircle className="w-4 h-4 text-[var(--color-safe)]" />
                                                 </div>
                                                 <div>
@@ -460,7 +460,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                             </div>
                                             <div className="space-y-2">
                                                 {activeResponses.map((resp) => (
-                                                    <div key={resp.id} className="bg-white border border-emerald-100 p-3 rounded-[var(--radius-input)] flex items-center justify-between gap-3">
+                                                    <div key={resp.id} className="bg-[var(--color-bg-elevated)] border border-emerald-100 p-3 rounded-[var(--radius-input)] flex items-center justify-between gap-3">
                                                         <div>
                                                             <p className="font-bold text-[var(--color-base-900)] text-sm">{resp.profiles?.full_name || "A Donor"}</p>
                                                             {resp.distance_meters != null && (
@@ -547,7 +547,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                                             <div className="flex gap-2">
                                                                 <button
                                                                     onClick={() => setConfirmingCancel(false)}
-                                                                    className="flex-1 py-2 border border-[var(--color-base-200)] text-[var(--color-base-700)] text-sm font-bold rounded-[var(--radius-input)] hover:bg-white transition-colors"
+                                                                    className="flex-1 py-2 border border-[var(--color-base-200)] text-[var(--color-base-700)] text-sm font-bold rounded-[var(--radius-input)] hover:bg-[var(--color-bg-elevated)] transition-colors"
                                                                 >
                                                                     Keep request
                                                                 </button>

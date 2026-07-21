@@ -20,7 +20,7 @@ const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 whitespace-nowrap",
     "font-semibold tracking-tight",
-    "transition-all duration-[150ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+    "transition-colors transition-transform transition-shadow duration-[150ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     "focus-visible:ring-[var(--color-primary)]",
     "disabled:pointer-events-none disabled:opacity-40",

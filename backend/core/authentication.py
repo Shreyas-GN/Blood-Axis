@@ -34,7 +34,13 @@ class ClerkAuthentication(authentication.BaseAuthentication):
         try:
             client = _get_jwks_client()
             signing_key = client.get_signing_key_from_jwt(token)
-            payload = jwt.decode(token, signing_key.key, algorithms=['RS256'])
+            payload = jwt.decode(
+                token, 
+                signing_key.key, 
+                algorithms=['RS256'],
+                options={'verify_iat': False, 'verify_nbf': False},
+                leeway=300
+            )
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed('Token has expired')
         except jwt.InvalidTokenError as exc:

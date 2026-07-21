@@ -11,95 +11,84 @@
 
 @theme {
   /* ── Font Stacks ────────────────────────────────────────────
-     font-sans  → Space Grotesk (body text, minimum 16px)
-     font-display → Geist (headings only)
-     font-mono  → Space Mono (metrics: blood groups, distances,
-                  timers, IDs, radius values — nothing else)
+     font-sans  → Inter (body text)
+     font-display → Space Grotesk (headings only)
+     font-mono  → JetBrains Mono (code, metrics)
   ── */
-  --font-sans: var(--font-space), system-ui, sans-serif;
-  --font-display: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-space-mono), monospace;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
 
   /* ── Radius System ─────────────────────────────────────────
-     Single source of truth. Never mix arbitrarily.
+     Cobalt theme uses tight 6px radii.
   ── */
-  --radius-card: 1.75rem;   /* 28px — cards, modals, sheets */
-  --radius-button: 1.125rem; /* 18px — all buttons */
-  --radius-input: 1rem;      /* 16px — all inputs */
-  --radius-badge: 999px;     /* fully rounded — badges, pills */
-  --radius-sheet: 1.75rem 1.75rem 0 0; /* bottom sheets */
+  --radius-card: 0.375rem;   /* 6px */
+  --radius-button: 0.375rem; /* 6px */
+  --radius-input: 0.375rem;  /* 6px */
+  --radius-badge: 999px;     /* fully rounded */
+  --radius-sheet: 0.375rem 0.375rem 0 0;
 
   /* Legacy Tailwind rounded-* aliases (keep for backward compat) */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
 
   /* ── Shadow System ──────────────────────────────────────────
-     Subtle only. No heavy elevation. No glassmorphism.
+     Cobalt uses barely-there shadows. Mostly reliant on hairlines.
   ── */
-  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.05);
-  --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.08);
-  --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.10);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.08);
 
-  /* Legacy shadow names (kept for backward compat) */
-  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.05);
-  --shadow-softer: 0 2px 12px rgba(0, 0, 0, 0.04);
-  --shadow-clay: 0 1px 0 rgba(0, 0, 0, 0.03), 0 4px 20px rgba(0, 0, 0, 0.06);
-  --shadow-clay-hard: 0 2px 0 rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.10);
+  /* Legacy shadow names */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.02);
+  --shadow-softer: 0 1px 2px rgba(0, 0, 0, 0.01);
+  --shadow-clay: 0 1px 0 rgba(0, 0, 0, 0.02);
+  --shadow-clay-hard: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 :root {
   /* ── Color System ───────────────────────────────────────────
-     SINGLE SOURCE OF TRUTH. All components must use these vars.
-     Never hardcode hex values in components.
-
-     primary  = identity/urgency/life (used sparingly — NOT on
-                large backgrounds)
-     cta      = warmer red for interactive elements/buttons
-     background/surface = warm whites (never pure white)
+     Cobalt theme: Cool white paper, electric blue accent.
   ── */
 
   /* Core brand */
-  --color-primary: #B91C1C;         /* Identity/urgency — used sparingly */
-  --color-primary-hover: #991B1B;   /* Hover of primary */
-  --color-cta: #D63A3A;             /* Interactive red — buttons, actions */
-  --color-cta-hover: #C52F2F;       /* Hover of CTA */
+  --color-primary: #0055FF;         /* Electric cobalt */
+  --color-primary-hover: #0044CC;   /* Hover */
+  --color-cta: #0055FF;             /* Interactive action */
+  --color-cta-hover: #0044CC;       /* Hover */
 
   /* Backgrounds */
-  --color-bg: #FCFCFB;              /* Warm white — page background */
-  --color-bg-elevated: #FFFFFF;     /* Card/surface background */
+  --color-bg: #FCFCFB;              /* Cool white paper */
+  --color-bg-elevated: #FFFFFF;     /* Elevated surfaces */
 
   /* Text */
-  --color-text-primary: #18181B;    /* Near-black — headings, primary content */
-  --color-text-secondary: #71717A;  /* Soft gray — supporting text */
-  --color-text-muted: #A1A1AA;      /* Very muted — timestamps, captions */
+  --color-text-primary: #18181B;    /* Near-black */
+  --color-text-secondary: #52525B;  /* Zinc-500 */
+  --color-text-muted: #A1A1AA;      /* Zinc-400 */
 
   /* Borders */
-  --color-border: #E4E4E7;          /* Standard border */
-  --color-border-subtle: #F4F4F5;   /* Very subtle separator */
+  --color-border: #E4E4E7;          /* Zinc-200 */
+  --color-border-subtle: #F4F4F5;   /* Zinc-100 */
 
   /* Semantic status */
-  --color-success: #10B981;         /* Emerald green — fulfilled, confirmed */
-  --color-success-light: #D1FAE5;   /* Success tint */
-  --color-warning: #F59E0B;         /* Amber — searching state */
-  --color-warning-light: #FEF3C7;   /* Warning tint */
-  --color-danger: #DC2626;          /* Error/danger */
-  --color-danger-light: #FEF2F2;    /* Danger tint */
+  --color-success: #10B981;         
+  --color-success-light: #D1FAE5;   
+  --color-warning: #F59E0B;         
+  --color-warning-light: #FEF3C7;   
+  --color-danger: #DC2626;          
+  --color-danger-light: #FEF2F2;    
 
   /* Dark surfaces */
-  --color-surface-zinc: #27272A;    /* Dark surface — sticky bar, overlays */
+  --color-surface-zinc: #27272A;    
   --color-surface-zinc-hover: #3F3F46;
 
-  /* ── Font Variables ─────────────────────────────────────────
-     --font-body   → Space Grotesk (registered in layout.tsx as --font-space)
-     --font-display → Geist Sans (headings)
-     --font-metric → Space Mono (blood groups, numbers, IDs)
-  ── */
-  --font-display: var(--font-geist-sans), system-ui, sans-serif;
-  --font-body: var(--font-space), var(--font-geist-sans), system-ui, sans-serif;
-  --font-metric: var(--font-space-mono), monospace;
+  /* ── Font Variables ───────────────────────────────────────── */
+  --font-display: var(--font-space), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-metric: var(--font-jetbrains-mono), monospace;
 
   /* ── Motion Tokens ──────────────────────────────────────────
      Framer Motion and CSS transitions reference these.
@@ -113,15 +102,15 @@
   /* ── shadcn/ui bridge tokens ───────────────────────────────
      shadcn components read these. Keep in sync with our palette.
   ── */
-  --background: #FCFCFB;
-  --foreground: #18181B;
-  --card: #FFFFFF;
-  --card-foreground: #18181B;
-  --border: #E4E4E7;
-  --input: #E4E4E7;
-  --ring: #B91C1C;
-  --muted: #F4F4F5;
-  --muted-foreground: #71717A;
+  --background: oklch(98% 0.01 20);
+  --foreground: oklch(20% 0.02 20);
+  --card: oklch(99.5% 0.005 20);
+  --card-foreground: oklch(20% 0.02 20);
+  --border: oklch(90% 0.01 20);
+  --input: oklch(90% 0.01 20);
+  --ring: oklch(45% 0.16 20);
+  --muted: oklch(94% 0.01 20);
+  --muted-foreground: oklch(45% 0.01 20);
 
   /* ── Legacy aliases ─────────────────────────────────────────
      Preserved for backward compat across existing pages.
@@ -130,19 +119,19 @@
   --color-blood: var(--color-cta);
   --color-blood-dark: var(--color-cta-hover);
   --color-blood-light: #FEE2E2;
-  --color-base-900: #18181B;
-  --color-base-700: #374151;
-  --color-base-600: #4B5563;
-  --color-base-500: #71717A;
-  --color-base-400: #9CA3AF;
-  --color-base-200: #E4E4E7;
-  --color-base-100: #F4F4F5;
-  --color-base-50: #FCFCFB;
+  --color-base-900: oklch(20% 0.02 20);
+  --color-base-700: oklch(35% 0.01 20);
+  --color-base-600: oklch(45% 0.01 20);
+  --color-base-500: oklch(65% 0.01 20);
+  --color-base-400: oklch(75% 0.01 20);
+  --color-base-200: oklch(90% 0.01 20);
+  --color-base-100: oklch(94% 0.01 20);
+  --color-base-50: oklch(98% 0.01 20);
   --color-safe: var(--color-success);
   --color-safe-light: var(--color-success-light);
   --color-warn: var(--color-warning);
   --color-warn-light: var(--color-warning-light);
-  --color-white: #FFFFFF;
+  --color-white: oklch(99.5% 0.005 20); /* Replaced pure white */
 }
 
 /* ── Base Styles ───────────────────────────────────────────── */
@@ -204,39 +193,36 @@
 
 /* ── Semantic Font Utilities ───────────────────────────────── */
 @layer utilities {
-  /* Display — hero sections only, Geist 700 */
   .font-display {
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
     line-height: 1.1;
   }
 
-  /* Heading — section titles, Geist 600 */
   .font-heading {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     line-height: 1.2;
   }
 
-  /* Body — default reading text, Space Grotesk 400 */
   .font-body {
     font-family: var(--font-body);
     font-weight: 400;
     line-height: 1.6;
     font-size: 1rem;
+    letter-spacing: -0.01em;
   }
 
-  /* Body LG — critical areas, Space Grotesk 400 18px */
   .font-body-lg {
     font-family: var(--font-body);
     font-weight: 400;
     font-size: 1.125rem;
     line-height: 1.6;
+    letter-spacing: -0.01em;
   }
 
-  /* Caption — secondary info, Space Grotesk 400 14px */
   .font-caption {
     font-family: var(--font-body);
     font-weight: 400;
@@ -245,11 +231,10 @@
     color: var(--color-text-muted);
   }
 
-  /* Metric — blood groups, distances, timers, IDs, radius values
-     ONLY use Space Mono for technical/numeric values */
   .font-metric {
     font-family: var(--font-metric);
     font-weight: 500;
+    font-size: 0.8125rem;
     font-feature-settings: "tnum";
     letter-spacing: -0.01em;
   }

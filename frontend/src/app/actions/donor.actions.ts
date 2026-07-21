@@ -4,32 +4,64 @@ import { auth } from "@clerk/nextjs/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export async function getProfileAction() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const { userId, getToken } = await auth();
+    if (!userId) return null;
+    const token = await getToken();
 
-    const { data, error } = await supabaseServer
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const response = await fetch(`${backendUrl}/api/profiles/${userId}/`, {
+        method: 'GET',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        cache: 'no-store',
+    });
 
-    if (error) throw new Error(`Failed to fetch profile: ${error.message}`);
+    if (response.status === 404) return null;
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to fetch profile: ${errText}`);
+    }
+    const data = await response.json();
     return data;
 }
 
 export async function updateProfileAction(profileData: any) {
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     if (!userId) throw new Error("Unauthorized");
+    const token = await getToken();
 
-    const { data, error } = await supabaseServer
+    // 1. Update Supabase for PostGIS geographic matching to keep it in sync
+    const { error } = await supabaseServer
         .from('profiles')
         .upsert({ id: userId, ...profileData })
         .select()
         .single();
 
-    if (error) throw new Error(`Failed to update profile: ${error.message}`);
-    return data;
+    if (error) {
+        console.error("Supabase update failed:", error);
+    }
+
+    // 2. Update Django SQLite for the UI to read correctly
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const response = await fetch(`${backendUrl}/api/profiles/${userId}/`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData)
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to update profile: ${errText}`);
+    }
+
+    return await response.json();
 }
+
 
 export async function submitDonorResponseAction(
     requestId: string,

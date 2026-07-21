@@ -6,7 +6,7 @@ export function SkeletonMapOverlay() {
       {/* Desktop skeleton overlay — top-left */}
       <div className="hidden md:block absolute top-4 left-4 z-20 w-[220px]">
         <div
-          className="bg-white rounded-[var(--radius-card)] overflow-hidden"
+          className="bg-[var(--color-bg-elevated)] rounded-[var(--radius-card)] overflow-hidden"
           style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.10)" }}
         >
           <div className="px-4 pt-4 pb-3 border-b border-[var(--color-border-subtle)] space-y-3">
@@ -30,7 +30,7 @@ export function SkeletonMapOverlay() {
       {/* Mobile skeleton bottom sheet */}
       <div className="fixed bottom-0 inset-x-0 z-30 md:hidden">
         <div
-          className="bg-white rounded-t-[28px] px-5 pt-3 pb-8"
+          className="bg-[var(--color-bg-elevated)] rounded-t-[28px] px-5 pt-3 pb-8"
           style={{ boxShadow: "0 -4px 40px rgba(0,0,0,0.08)" }}
         >
           {/* Handle */}
@@ -46,10 +46,10 @@ export function SkeletonMapOverlay() {
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-2 mb-5">
+          <div className="grid grid-cols-2 gap-2 mb-5">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-[var(--color-border-subtle)] rounded-[14px] p-3 space-y-2">
-                <div className="h-2.5 w-6 bg-[var(--color-border)] rounded-full animate-pulse" />
+              <div key={i} className={`bg-[var(--color-border-subtle)] rounded-[14px] p-3 space-y-2 ${i === 2 ? 'col-span-2 flex flex-row items-center justify-between space-y-0' : ''}`}>
+                <div className={`h-2.5 w-6 bg-[var(--color-border)] rounded-full animate-pulse ${i === 2 ? 'mb-0' : ''}`} />
                 <div className="h-5 w-10 bg-[var(--color-border)] rounded animate-pulse" />
                 <div className="h-2 w-8 bg-[var(--color-border-subtle)] rounded-full animate-pulse" />
               </div>

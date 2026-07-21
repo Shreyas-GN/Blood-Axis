@@ -11,8 +11,8 @@ export default function RequestRedirect() {
     }, [router]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <p className="text-gray-500">Redirecting...</p>
+        <div className="pt-24 px-6 max-w-md mx-auto">
+            <p className="text-[var(--color-text-muted)] font-medium">Redirecting...</p>
         </div>
     );
 }

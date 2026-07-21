@@ -36,46 +36,37 @@ export function AvailabilityCard({ profile, onToggle }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-[28px] border border-[#ECECEC] shadow-[0_8px_30px_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3 justify-between">
-            <div>
-                <div className="flex items-center gap-2.5 mb-2">
-                    <div className="relative w-3 h-3 shrink-0">
-                        <span
-                            className={`absolute inset-0 rounded-full transition-colors ${
-                                isAvailable ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
-                            }`}
-                        />
-                        {isAvailable && (
-                            <span className="absolute inset-0 rounded-full bg-[#22C55E] animate-ping opacity-40" />
-                        )}
+        <div className="flex items-center justify-between w-full h-full bg-[var(--color-bg-elevated)]">
+            <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                    <div className="relative w-2 h-2 shrink-0">
+                        <span className={`absolute inset-0 rounded-full transition-colors ${isAvailable ? "bg-[var(--color-success)]" : "bg-[var(--color-text-muted)]"}`} />
+                        {isAvailable && <span className="absolute inset-0 rounded-full bg-[var(--color-success)] animate-ping opacity-40" />}
                     </div>
-                    <span className="text-[13px] font-semibold text-[#1E1E1E]">
-                        {isAvailable ? "Active" : "Unavailable"}
+                    <span className="text-sm font-metric text-[var(--color-text-primary)] uppercase tracking-wider">
+                        {isAvailable ? "Status: Active" : "Status: Paused"}
                     </span>
                 </div>
-                <p className="text-xs text-[#737373] leading-relaxed">
+                <p className="text-[13px] font-body text-[var(--color-text-secondary)] max-w-[200px]">
                     {isAvailable
-                        ? `Matching ${profile?.blood_group ?? ""} requests near you`
-                        : "Not receiving requests right now"}
+                        ? `Monitoring ${profile?.blood_group ?? ""} emergencies.`
+                        : "Not receiving requests."}
                 </p>
             </div>
 
             <button
                 onClick={handleToggle}
                 disabled={loading || !profile}
-                aria-label={isAvailable ? "Pause availability" : "Go active as donor"}
-                className={`w-full h-[52px] rounded-[18px] text-[13px] font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isAvailable
-                        ? "bg-[#F4F4F4] text-[#737373] hover:bg-[#ECECEC]"
-                        : "bg-[#D63A3A] text-white hover:bg-[#C52F2F]"
-                }`}
+                className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isAvailable ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-border-subtle)]'}`}
+                role="switch"
+                aria-checked={isAvailable}
             >
                 {loading ? (
-                    <span className="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin" />
-                ) : isAvailable ? (
-                    "Pause"
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin absolute" />
                 ) : (
-                    "Go Active"
+                    <span
+                        className={`pointer-events-none absolute left-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-transform ${isAvailable ? 'translate-x-6' : 'translate-x-0'}`}
+                    />
                 )}
             </button>
         </div>

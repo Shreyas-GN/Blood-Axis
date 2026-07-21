@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Space_Grotesk, Space_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk, Space_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { AuthProvider } from '@/context/AuthContext';
@@ -26,6 +26,18 @@ const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -98,21 +110,21 @@ export default function RootLayout({
     <ClerkProvider
       appearance={{
         variables: {
-          colorPrimary: '#B91C1C',
+          colorPrimary: '#0055FF',
           colorBackground: '#FCFCFB',
           colorText: '#18181B',
           colorDanger: '#DC2626',
-          fontFamily: 'var(--font-space), var(--font-geist-sans), sans-serif',
-          borderRadius: '16px'
+          fontFamily: 'var(--font-inter), sans-serif',
+          borderRadius: '6px'
         },
         elements: {
-          card: 'shadow-[0_8px_30px_rgba(0,0,0,0.05)] border border-[#E4E4E7]',
-          formButtonPrimary: 'shadow-[0_4px_14px_rgba(185,28,28,0.25)] hover:scale-[1.01] transition-all',
-          formFieldInput: 'border-[#E4E4E7] shadow-[0_2px_12px_rgba(0,0,0,0.03)] focus:border-[#B91C1C] focus:ring-[#B91C1C]'
+          card: 'shadow-none border border-[#E4E4E7]',
+          formButtonPrimary: 'hover:scale-[1.01] transition-all',
+          formFieldInput: 'border-[#E4E4E7] focus:border-[#0055FF] focus:ring-[#0055FF]'
         }
       }}
     >
-      <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}>
+      <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
         <head>
           <script
             type="application/ld+json"

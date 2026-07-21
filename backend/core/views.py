@@ -2,9 +2,38 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import connection
-from .models import BloodRequest
-from .serializers import BloodRequestSerializer
+from .models import BloodRequest, DonorProfile
+from .serializers import BloodRequestSerializer, DonorProfileSerializer
 from .services import MatchingEngineClient
+
+class DonorProfileViewSet(viewsets.ModelViewSet):
+    queryset = DonorProfile.objects.all()
+    serializer_class = DonorProfileSerializer
+
+    @action(detail=False, methods=['post'], url_path='upsert')
+    def upsert(self, request):
+        user_id = request.data.get('id')
+        if not user_id:
+            return Response({"error": "id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # update or create
+        profile, created = DonorProfile.objects.update_or_create(
+            id=user_id,
+            defaults={
+                'full_name': request.data.get('full_name'),
+                'phone': request.data.get('phone'),
+                'blood_group': request.data.get('blood_group'),
+                'is_donor': request.data.get('is_donor', False),
+                'is_available_donor': request.data.get('is_available_donor', False),
+                'city': request.data.get('city'),
+                'profile_completed': request.data.get('profile_completed', False),
+                'location': request.data.get('location'),
+                'latitude': request.data.get('latitude'),
+                'longitude': request.data.get('longitude'),
+            }
+        )
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
 
 
 class BloodRequestViewSet(viewsets.ModelViewSet):

@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
    ───────────────────────────────────────────────────────────── */
 
 const cardVariants = cva(
-  "rounded-[var(--radius-card)] transition-all duration-[150ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+  "rounded-[var(--radius-card)] transition-colors transition-transform transition-shadow duration-[150ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
   {
     variants: {
       variant: {

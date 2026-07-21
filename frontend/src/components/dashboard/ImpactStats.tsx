@@ -40,7 +40,7 @@ export function ImpactStats({ totalHelped = 0, points = 0, level = "Bronze Savio
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mb-6 relative z-10">
+            <div className="grid grid-cols-2 gap-2 mb-6 relative z-10">
                 <div className="bg-zinc-800/50 rounded-xl p-3 flex flex-col items-center justify-center border border-zinc-700/50">
                     <Flame className="w-4 h-4 text-zinc-500 mb-1" />
                     <span className="text-[10px] text-zinc-400 font-mono uppercase">Streak</span>
@@ -51,9 +51,9 @@ export function ImpactStats({ totalHelped = 0, points = 0, level = "Bronze Savio
                     <span className="text-[10px] text-zinc-400 font-mono uppercase">Points</span>
                     <span className="font-bold text-sm">{points}</span>
                 </div>
-                <div className="bg-zinc-800/50 rounded-xl p-3 flex flex-col items-center justify-center border border-zinc-700/50">
-                    <MapPin className="w-4 h-4 text-zinc-500 mb-1" />
-                    <span className="text-[10px] text-zinc-400 font-mono uppercase">Rank</span>
+                <div className="col-span-2 bg-zinc-800/50 rounded-xl p-3 flex flex-row items-center justify-center gap-3 border border-zinc-700/50">
+                    <MapPin className="w-4 h-4 text-zinc-500" />
+                    <span className="text-[10px] text-zinc-400 font-mono uppercase">Rank:</span>
                     <span className="font-bold text-sm">---</span>
                 </div>
             </div>

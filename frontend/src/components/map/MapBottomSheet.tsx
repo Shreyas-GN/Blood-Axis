@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Phone, Heart, Droplet, MapPin, Clock, Users } from "lucide-react";
 import { sheetSlideUp } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 interface MapBottomSheetProps {
   bloodGroup: string;
@@ -60,7 +61,7 @@ export function MapBottomSheet({
     >
       {/* Sheet surface */}
       <div
-        className="bg-white rounded-t-[28px] px-5 pt-3 pb-safe"
+        className="bg-[var(--color-bg-elevated)] rounded-t-[28px] px-5 pt-3 pb-safe"
         style={{ boxShadow: "0 -4px 40px rgba(0,0,0,0.10)" }}
       >
         {/* Drag handle */}
@@ -90,10 +91,10 @@ export function MapBottomSheet({
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="grid grid-cols-2 gap-2 mb-5">
           <Stat icon={<MapPin className="w-3.5 h-3.5" />} label="Radius" value={`${radius}km`} />
           <Stat icon={<Users className="w-3.5 h-3.5" />} label="Notified" value={String(donorsNotified)} />
-          <Stat icon={<Clock className="w-3.5 h-3.5" />} label="Elapsed" value={elapsedTime} />
+          <Stat className="col-span-2 flex-row items-center justify-between" icon={<Clock className="w-3.5 h-3.5" />} label="Elapsed" value={elapsedTime} />
         </div>
 
         {/* ETA row */}
@@ -137,9 +138,9 @@ export function MapBottomSheet({
   );
 }
 
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Stat({ icon, label, value, className }: { icon: React.ReactNode; label: string; value: string; className?: string }) {
   return (
-    <div className="bg-[var(--color-border-subtle)] rounded-[14px] p-3 flex flex-col gap-1.5">
+    <div className={cn("bg-[var(--color-border-subtle)] rounded-[14px] p-3 flex flex-col gap-1.5", className)}>
       <div className="flex items-center gap-1 text-[var(--color-text-muted)]">{icon}</div>
       <p className="font-mono font-bold text-base text-[var(--color-text-primary)] leading-none">{value}</p>
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">{label}</p>

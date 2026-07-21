@@ -19,12 +19,12 @@ export function BloodGroupCard({ group, isSelected, onClick }: BloodGroupCardPro
       transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
         "relative flex items-center justify-center",
-        "h-[100px] rounded-[20px] border-2 transition-colors duration-[150ms]",
+        "h-[100px] rounded-[20px] border-2 transition-colors transition-shadow duration-[150ms]",
         "font-mono font-bold text-[1.625rem] select-none cursor-pointer",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-blood)] focus-visible:ring-offset-2",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2",
         isSelected
-          ? "bg-[var(--color-blood-light)] border-[var(--color-blood)] text-[var(--color-blood)] shadow-[0_6px_24px_rgba(214,58,58,0.18)]"
-          : "bg-white border-[var(--color-base-200)] text-[var(--color-base-900)] hover:border-[var(--color-base-400)] hover:shadow-[var(--shadow-clay)]"
+          ? "bg-[var(--color-primary)] border-[var(--color-primary)] text-white shadow-[var(--shadow-card-hover)]"
+          : "bg-[var(--color-bg-elevated)] border-[var(--color-border)] text-[var(--color-text-primary)] hover:border-[var(--color-primary)] hover:shadow-[var(--shadow-card-hover)]"
       )}
       aria-pressed={isSelected}
     >

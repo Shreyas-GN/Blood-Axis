@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Droplet, CheckCircle2, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { Notification } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 
-const NOTIFICATION_ICONS: Record<string, string> = {
-    emergency_request: "🩸",
-    request_update:    "✅",
-    system:            "🔔",
+const NOTIFICATION_ICONS: Record<string, React.ReactNode> = {
+    emergency_request: <Droplet className="w-4 h-4 text-[var(--color-primary)]" />,
+    request_update:    <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" />,
+    system:            <Info className="w-4 h-4 text-[var(--color-text-secondary)]" />,
 };
 
 export function NotificationBell() {
@@ -35,7 +35,7 @@ export function NotificationBell() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen((prev) => !prev)}
-                className="relative p-[8px] rounded-full bg-white border-[1.5px] border-[var(--color-base-200)] shadow-[var(--shadow-clay)] hover:border-[var(--color-blood)] transition-colors group flex items-center justify-center"
+                className="relative p-[8px] rounded-full bg-[var(--color-bg-elevated)] border-[1.5px] border-[var(--color-border)] shadow-[var(--shadow-card)] hover:border-[var(--color-primary)] transition-colors group flex items-center justify-center"
                 aria-label="Toggle notifications"
             >
                 <Bell className="w-5 h-5 text-[var(--color-base-700)] group-hover:text-[var(--color-blood)] transition-colors" />
@@ -64,7 +64,7 @@ export function NotificationBell() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.98 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 mt-3 w-80 z-50 flex flex-col bg-white rounded-[var(--radius-card)] shadow-[var(--shadow-clay-hard)] border-[1.5px] border-[var(--color-base-200)] overflow-hidden"
+                            className="absolute right-0 mt-3 w-80 z-50 flex flex-col bg-[var(--color-bg-elevated)] rounded-[var(--radius-card)] shadow-[var(--shadow-elevated)] border-[1.5px] border-[var(--color-border)] overflow-hidden"
                         >
                             <div className="px-5 py-4 border-b border-[var(--color-base-200)] flex items-center justify-between bg-[var(--color-base-50)]">
                                 <h3 className="font-mono text-[0.75rem] font-bold text-[var(--color-base-500)] uppercase tracking-widest">Notifications</h3>
@@ -94,8 +94,8 @@ export function NotificationBell() {
                                             onClick={() => handleClick(notification)}
                                             className={`w-full p-4 transition-colors text-left flex gap-3 border-b border-[var(--color-base-200)] last:border-b-0 ${notification.status === 'unread' ? "bg-[var(--color-blood-light)]" : "hover:bg-[var(--color-base-50)]"}`}
                                         >
-                                            <div className="flex-shrink-0 w-[32px] h-[32px] rounded-full flex items-center justify-center bg-white shadow-sm border border-[var(--color-base-200)] text-[1rem]">
-                                                {NOTIFICATION_ICONS[notification.type] ?? "🔔"}
+                                            <div className="flex-shrink-0 w-[32px] h-[32px] rounded-full flex items-center justify-center bg-[var(--color-bg-elevated)] shadow-sm border border-[var(--color-border)] text-[1rem]">
+                                                {NOTIFICATION_ICONS[notification.type] ?? <Bell className="w-4 h-4 text-[var(--color-text-secondary)]" />}
                                             </div>
 
                                             <div className="flex-1 min-w-0">

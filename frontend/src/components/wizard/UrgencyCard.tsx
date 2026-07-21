@@ -32,17 +32,17 @@ export function UrgencyCard({
       onClick={onClick}
       aria-pressed={isSelected}
       className={cn(
-        "w-full p-5 rounded-[var(--radius-card)] border-2 text-left transition-all duration-[150ms]",
+        "w-full p-5 rounded-[var(--radius-card)] border-2 text-left transition-colors transition-shadow duration-[150ms]",
         "flex items-center gap-4",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-blood)] focus-visible:ring-offset-2",
         isSelected
-          ? `${borderClass} ${bgClass} shadow-[var(--shadow-clay)]`
-          : "border-[var(--color-base-200)] bg-white hover:border-[var(--color-base-300)] hover:shadow-[var(--shadow-clay)]"
+          ? `${borderClass} ${bgClass} shadow-[var(--shadow-card)]`
+          : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:shadow-[var(--shadow-card-hover)]"
       )}
     >
       <div
         className={cn(
-          "w-12 h-12 rounded-[12px] flex items-center justify-center bg-white shadow-sm shrink-0 transition-colors duration-[150ms]",
+          "w-12 h-12 rounded-[12px] flex items-center justify-center bg-[var(--color-bg-elevated)] shadow-sm shrink-0 transition-colors duration-[150ms]",
           isSelected ? colorClass : "text-[var(--color-base-400)]"
         )}
       >
