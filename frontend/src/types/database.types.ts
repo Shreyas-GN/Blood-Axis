@@ -42,6 +42,7 @@ export interface Database {
           location: string | null
           latitude: number | null
           longitude: number | null
+          age: number | null
           last_donation_date: string | null
           cooldown_until: string | null
           is_verified: boolean
@@ -60,6 +61,7 @@ export interface Database {
           location?: string | null
           latitude?: number | null
           longitude?: number | null
+          age?: number | null
           last_donation_date?: string | null
           cooldown_until?: string | null
           is_verified?: boolean
@@ -78,6 +80,7 @@ export interface Database {
           location?: string | null
           latitude?: number | null
           longitude?: number | null
+          age?: number | null
           last_donation_date?: string | null
           cooldown_until?: string | null
           is_verified?: boolean

@@ -117,7 +117,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (!loading && profile && profile.profile_completed === false) {
-            router.push("/onboarding");
+            router.push("/settings");
         }
     }, [loading, profile, router]);
 

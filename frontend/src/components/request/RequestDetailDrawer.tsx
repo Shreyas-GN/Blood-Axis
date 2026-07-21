@@ -111,7 +111,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
     }, [onClose]);
 
     const handleAccept = async () => {
-        if (!currentUserProfile?.id) { router.push("/onboarding"); return; }
+        if (!currentUserProfile?.id) { router.push("/settings"); return; }
         setAccepting(true);
         try {
             let distance = null;

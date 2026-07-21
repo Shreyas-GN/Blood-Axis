@@ -2,6 +2,9 @@
 
 import { supabaseServer } from "@/lib/supabase/server";
 
+import { ActivityService } from "@/services/activity.service";
+import { revalidatePath } from "next/cache";
+
 export async function getProfileAction() {
     const supabase = await supabaseServer;
     const { data: { user } } = await supabase.auth.getUser();
@@ -36,6 +39,56 @@ export async function updateProfileAction(profileData: any) {
 
     // We skip Django update since we are migrating to Supabase as single source of truth.
     return data;
+}
+
+export async function saveRegistrationProfile(userId: string, data: {
+    blood_group: string;
+    phone: string;
+    city: string;
+    is_available_donor: boolean;
+    latitude: number | null;
+    longitude: number | null;
+    location: string | null;
+    full_name: string;
+    age: number;
+}) {
+    console.log('[donor:action] ▶ saveRegistrationProfile called for user:', userId);
+
+    const supabase = await supabaseServer;
+    const profileData = {
+        full_name: data.full_name,
+        blood_group: data.blood_group as any,
+        phone: data.phone,
+        city: data.city,
+        is_available_donor: data.is_available_donor,
+        is_donor: data.is_available_donor,
+        profile_completed: true,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        location: data.location,
+        age: data.age,
+    };
+
+    console.log('[donor:action] Attempting Supabase upsert for userId:', userId, profileData);
+
+    const { error } = await supabase
+        .from('profiles')
+        .upsert({ id: userId, ...profileData });
+
+    if (error) {
+        console.error('[donor:action] ✖ Supabase upsert failed:', error);
+        throw new Error(`Failed to save profile: ${error.message}`);
+    }
+
+    console.log('[donor:action] ✔ Supabase upsert succeeded');
+
+    await ActivityService.log(userId, 'profile_completed', 'Completed donor profile setup.', null, supabaseServer as any).catch((e: unknown) => {
+        console.warn('[donor:action] Activity log failed (non-fatal):', e);
+    });
+
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+    return { success: true };
 }
 
 

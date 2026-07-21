@@ -183,7 +183,7 @@ export default function EmergencyMapPage() {
   }, [isLoaded, user]);
 
   const handleHelp = useCallback(async () => {
-    if (!currentProfile?.id) { router.push("/onboarding"); return; }
+    if (!currentProfile?.id) { router.push("/settings"); return; }
     setAccepting(true);
     try {
       await DonorService.submitDonorResponse(params.id as string, currentProfile.id.toString());

@@ -157,7 +157,7 @@ export default function RequestDetailPage() {
 
   // Actions
   const handleAcceptRequest = async () => {
-    if (!currentUserProfile?.id) { router.push("/onboarding"); return; }
+    if (!currentUserProfile?.id) { router.push("/settings"); return; }
     setAccepting(true);
     try {
       await submitDonorResponseAction(params.id as string, 'ACCEPTED');
