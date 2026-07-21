@@ -1,8 +1,8 @@
 "use client";
 
-export type FilterOption = "All" | "Emergency" | "Today" | "Fulfilled";
+export type FilterOption = "All" | "Emergency" | "My Requests" | "Today" | "Fulfilled";
 
-const FILTERS: FilterOption[] = ["All", "Emergency", "Today", "Fulfilled"];
+const FILTERS: FilterOption[] = ["All", "Emergency", "My Requests", "Today", "Fulfilled"];
 
 interface FilterPillsProps {
     active: FilterOption;

@@ -125,16 +125,22 @@ export default function DashboardPage() {
 
     if (!isLoaded || loading) return <div className="min-h-screen bg-[var(--color-bg)]" />;
 
-    const donateRequests = allRequests.filter(
+    const donateRequests = profile?.is_available_donor ? allRequests.filter(
         (r) =>
             r.requester_id !== (profile?.id ?? -1) &&
             (r.blood_group === profile?.blood_group || r.requester_id === null) &&
             (r.status === "searching" || r.status === "donor_accepted" || acceptedIds.has(r.id))
+    ) : [];
+
+    const myRequests = allRequests.filter(
+        (r) => r.requester_id === profile?.id
     );
 
     const filteredRequests = (() => {
         if (activeFilter === "Emergency")
             return donateRequests.filter((r) => r.urgency_level === "IMMEDIATE");
+        if (activeFilter === "My Requests")
+            return myRequests;
         if (activeFilter === "Today")
             return donateRequests.filter((r) => isToday(new Date(r.created_at)));
         if (activeFilter === "Fulfilled")
@@ -144,6 +150,7 @@ export default function DashboardPage() {
 
     const filterCounts: Partial<Record<FilterOption, number>> = {
         Emergency: donateRequests.filter((r) => r.urgency_level === "IMMEDIATE").length,
+        "My Requests": myRequests.length,
         Today: donateRequests.filter((r) => isToday(new Date(r.created_at))).length,
         Fulfilled: allRequests.filter((r) => acceptedIds.has(r.id) && r.status === "fulfilled").length,
     };
@@ -223,14 +230,12 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Filters Span Full */}
-                    {profile?.is_available_donor && (
-                        <div className="lg:col-span-4 py-2">
-                            <FilterPills active={activeFilter} onChange={setActiveFilter} counts={filterCounts} />
-                        </div>
-                    )}
+                    <div className="lg:col-span-4 py-2">
+                        <FilterPills active={activeFilter} onChange={setActiveFilter} counts={filterCounts} />
+                    </div>
 
                     {/* Bento Requests (varying spans based on content) */}
-                    {profile?.is_available_donor && filteredRequests.map((req, idx) => {
+                    {filteredRequests.map((req, idx) => {
                         // Irregular rhythm: first item spans 2 on tablet, 1 on desktop
                         // Alternate spans to create a true bento grid feel instead of uniform cards
                         const isWide = idx === 0 || idx % 5 === 0;
@@ -247,7 +252,7 @@ export default function DashboardPage() {
                         );
                     })}
 
-                    {!profile?.is_available_donor && (
+                    {!profile?.is_available_donor && activeFilter !== "My Requests" && (
                         <div className="lg:col-span-4 card-base p-12 text-center border border-[var(--color-border)] rounded-[var(--radius-card)] bg-[var(--color-bg-elevated)]">
                             <p className="font-display font-medium text-lg mb-2">You're currently offline.</p>
                             <p className="font-body text-[var(--color-text-secondary)] text-sm">Toggle your availability above to start receiving match requests.</p>
