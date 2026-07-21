@@ -21,7 +21,7 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
-                const { error: signUpError } = await supabaseClient.auth.signUp({
+                const { data, error: signUpError } = await supabaseClient.auth.signUp({
                     email,
                     password,
                     options: {
@@ -29,7 +29,13 @@ export default function LoginPage() {
                     }
                 });
                 if (signUpError) throw signUpError;
-                setError("Check your email for the confirmation link!"); // Not actually an error, just feedback
+                
+                if (data.session) {
+                    router.push('/dashboard');
+                    router.refresh();
+                } else {
+                    setError("Check your email for the confirmation link!");
+                }
             } else {
                 const { error: signInError } = await supabaseClient.auth.signInWithPassword({
                     email,
