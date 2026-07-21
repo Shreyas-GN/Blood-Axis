@@ -11,9 +11,10 @@ interface Props {
   onSelect?: (details: any) => void;
   placeholder?: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function LocationAutocomplete({ value, onChange, onSelect, placeholder, className }: Props) {
+export function LocationAutocomplete({ value, onChange, onSelect, placeholder, className, style }: Props) {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -90,6 +91,7 @@ export function LocationAutocomplete({ value, onChange, onSelect, placeholder, c
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder || "Search location..."}
           className={className}
+          style={style}
         />
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {loading ? (
