@@ -1,0 +1,16 @@
+{
+  "name": "BloodRelay",
+  "short_name": "BloodRelay",
+  "description": "Real-time emergency blood donation platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

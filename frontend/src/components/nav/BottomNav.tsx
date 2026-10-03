@@ -21,7 +21,7 @@ export function BottomNav() {
             className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
             aria-label="Main navigation"
             style={{
-                background: "rgba(252,252,251,0.96)",
+                backgroundColor: "color-mix(in oklab, var(--color-bg) 88%, transparent)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
                 borderTop: "1px solid var(--color-border-subtle)",

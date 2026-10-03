@@ -10,6 +10,7 @@ import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from "f
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ActivityFeedPreview } from "@/components/landing/ActivityFeedPreview";
 import { CommandPalette, useCommandPalette } from "@/components/ui/CommandPalette";
+import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
 
 // --- Hallmark Stamp ---
 /* Hallmark · macrostructure: Stat-Led
@@ -289,7 +290,7 @@ export default function Home() {
           </div>
         </div>
         {menuOpen && (
-          <nav className="md:hidden border-t px-5 py-4 flex flex-col gap-4 text-sm" style={{ borderColor: "var(--color-rule)" }} aria-label="Mobile">
+          <nav className="md:hidden border-t px-5 py-4 flex flex-col gap-4 text-sm" style={{ borderColor: "var(--color-rule)", backgroundColor: "var(--color-paper)" }} aria-label="Mobile">
             {NAV.map((n) => (
               <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} style={{ color: "var(--color-ink-2)" }}>{n.label}</a>
             ))}
@@ -299,40 +300,58 @@ export default function Home() {
 
       <main className="flex-1 w-full flex flex-col">
         {/* Hero */}
-        <section className="border-b" style={{ borderColor: "var(--color-rule)" }}>
-          <div className={`${wrap} pt-16 pb-20 md:pt-24 md:pb-28 grid grid-cols-1 lg:grid-cols-12 gap-14 items-center`}>
-            <motion.div variants={stagger} initial="hidden" animate="show" className="lg:col-span-7">
-              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-8 text-xs font-medium" style={{ borderColor: "var(--color-rule)", color: "var(--color-ink-2)", backgroundColor: "var(--color-paper-2)" }}>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: "var(--color-success)" }} />
-                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: "var(--color-success)" }} />
-                </span>
-                Emergency blood network · live now
+        <section className="border-b relative" style={{ borderColor: "var(--color-rule)" }}>
+          <BubbleBackground 
+            interactive={true}
+            colors={{
+              first: '220,38,38',
+              second: '153,27,27',
+              third: '239,68,68',
+              fourth: '127,29,29',
+              fifth: '185,28,28',
+              sixth: '248,113,113',
+            }}
+            className="w-full bg-[var(--color-paper)]"
+          >
+            <div className={`${wrap} relative z-10 pt-16 pb-20 md:pt-24 md:pb-28 grid grid-cols-1 lg:grid-cols-12 gap-14 items-center`}>
+              <motion.div variants={stagger} initial="hidden" animate="show" className="lg:col-span-7">
+                <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-8 text-xs font-medium backdrop-blur-md" style={{ borderColor: "var(--color-rule)", color: "var(--color-ink-2)", backgroundColor: "color-mix(in oklab, var(--color-paper-2) 60%, transparent)" }}>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: "var(--color-success)" }} />
+                    <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: "var(--color-success)" }} />
+                  </span>
+                  Emergency blood network · live now
+                </motion.div>
+                <motion.h1 variants={fadeIn} className="font-medium leading-[1.05] tracking-tight mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
+                  Find a blood donor near you, <span style={{ color: "var(--color-accent)" }}>in minutes.</span>
+                </motion.h1>
+                <motion.p variants={fadeIn} className="text-lg leading-relaxed mb-10 max-w-xl" style={{ color: "var(--color-ink-2)" }}>
+                  BloodRelay connects patients, families and hospitals with verified donors nearby in real time. Post a request, nearby matching donors are alerted instantly, and you track who is on the way.
+                </motion.p>
+                <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 mb-10">
+                  <Link href="/emergency" className={primaryBtn} style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}>
+                    Request blood <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link href="/login" className={`${primaryBtn} border backdrop-blur-md hover:bg-[color-mix(in_oklab,var(--color-paper-2)_80%,transparent)]`} style={{ borderColor: "var(--color-rule)", color: "var(--color-ink)", backgroundColor: "color-mix(in oklab, var(--color-paper-2) 40%, transparent)" }}>
+                    Register as donor
+                  </Link>
+                </motion.div>
+                <motion.ul variants={fadeIn} className="flex flex-wrap gap-x-6 gap-y-3 text-xs font-mono tracking-wider uppercase backdrop-blur-sm p-3 rounded-lg -ml-3" style={{ color: "var(--color-ink-2)", backgroundColor: "color-mix(in oklab, var(--color-paper-2) 20%, transparent)" }}>
+                  <li className="flex items-center gap-2"><Shield className="w-3.5 h-3.5" /> Private by default</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Free for everyone</li>
+                  <li className="flex items-center gap-2"><Smartphone className="w-3.5 h-3.5" /> Works on any phone</li>
+                </motion.ul>
               </motion.div>
-              <motion.h1 variants={fadeIn} className="font-medium leading-[1.05] tracking-tight mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
-                Find a blood donor near you, <span style={{ color: "var(--color-accent)" }}>in minutes.</span>
-              </motion.h1>
-              <motion.p variants={fadeIn} className="text-lg leading-relaxed mb-10 max-w-xl" style={{ color: "var(--color-ink-2)" }}>
-                BloodRelay connects patients, families and hospitals with verified donors nearby in real time. Post a request, nearby matching donors are alerted instantly, and you track who is on the way.
-              </motion.p>
-              <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Link href="/emergency" className={primaryBtn} style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}>
-                  Request blood <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link href="/login" className={`${primaryBtn} border hover:bg-[var(--color-paper-2)]`} style={{ borderColor: "var(--color-rule)", color: "var(--color-ink)" }}>
-                  Register as donor
-                </Link>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3, ease }} className="lg:col-span-5 flex justify-center lg:justify-end">
+                <div className="backdrop-blur-xl rounded-sm p-1 shadow-2xl bg-white/5 border border-white/10 relative z-10 w-full max-w-[380px] overflow-hidden">
+                   <div className="absolute inset-0 bg-[var(--color-paper-2)] opacity-80" />
+                   <div className="relative z-20">
+                     <RequestPreviewCard />
+                   </div>
+                </div>
               </motion.div>
-              <motion.ul variants={fadeIn} className="flex flex-wrap gap-x-6 gap-y-3 text-xs font-mono tracking-wider uppercase" style={{ color: "var(--color-muted)" }}>
-                <li className="flex items-center gap-2"><Shield className="w-3.5 h-3.5" /> Private by default</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Free for everyone</li>
-                <li className="flex items-center gap-2"><Smartphone className="w-3.5 h-3.5" /> Works on any phone</li>
-              </motion.ul>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3, ease }} className="lg:col-span-5 flex justify-center lg:justify-end">
-              <RequestPreviewCard />
-            </motion.div>
-          </div>
+            </div>
+          </BubbleBackground>
         </section>
 
         {/* Stats band */}

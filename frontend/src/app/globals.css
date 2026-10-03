@@ -55,10 +55,10 @@
   ── */
 
   /* Core brand */
-  --color-primary: #0055FF;         /* Electric cobalt */
-  --color-primary-hover: #0044CC;   /* Hover */
-  --color-cta: #0055FF;             /* Interactive action */
-  --color-cta-hover: #0044CC;       /* Hover */
+  --color-primary: #DC2626;         /* BloodRelay Red */
+  --color-primary-hover: #B91C1C;   /* Hover */
+  --color-cta: #DC2626;             /* Interactive action */
+  --color-cta-hover: #B91C1C;       /* Hover */
 
   /* Backgrounds */
   --color-bg: #FCFCFB;              /* Cool white paper */
@@ -138,6 +138,7 @@
 @layer base {
   * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
