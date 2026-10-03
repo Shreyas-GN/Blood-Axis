@@ -48,6 +48,14 @@ const mockStore: {
 };
 
 class MockSupabaseClient {
+  auth = {
+    signUp: () => Promise.resolve({ data: { user: { id: "mock_user_123" }, session: {} }, error: null }),
+    signInWithPassword: () => Promise.resolve({ data: { user: { id: "mock_user_123" }, session: {} }, error: null }),
+    signOut: () => Promise.resolve({ error: null }),
+    getUser: () => Promise.resolve({ data: { user: { id: "mock_user_123" } }, error: null }),
+    getSession: () => Promise.resolve({ data: { session: {} }, error: null })
+  };
+
   channel() {
     return {
       on: () => this.channel(),
