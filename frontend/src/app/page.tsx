@@ -202,6 +202,16 @@ const FAQS = [
   { q: "Is this a replacement for a blood bank?", a: "No. BloodRelay complements blood banks by quickly reaching voluntary donors when stock is low or a rare group is needed urgently. In a medical emergency, always contact your hospital first." },
 ];
 
+import { Faq4 } from "@/components/ui/faq-4";
+import { Footer11 } from "@/components/ui/footer-11";
+
+// Existing FAQS adapted for Faq4
+const FAQ_ITEMS = FAQS.map((f, i) => ({
+  id: `faq-${i}`,
+  question: f.q,
+  answer: f.a
+}));
+
 function SectionHeader({ eyebrow, title, sub, accent }: { eyebrow: string; title: string; sub?: string; accent?: boolean }) {
   return (
     <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} variants={stagger} className="max-w-3xl mb-14">
@@ -209,25 +219,6 @@ function SectionHeader({ eyebrow, title, sub, accent }: { eyebrow: string; title
       <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-medium leading-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-ink)" }}>{title}</motion.h2>
       {sub && <motion.p variants={fadeIn} className="mt-5 text-base leading-relaxed max-w-2xl" style={{ color: "var(--color-ink-2)" }}>{sub}</motion.p>}
     </motion.div>
-  );
-}
-
-function FaqItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b" style={{ borderColor: "var(--color-rule)" }}>
-      <button onClick={() => setOpen(!open)} aria-expanded={open} className="w-full flex items-center justify-between gap-4 py-5 text-left">
-        <span className="text-base font-medium" style={{ color: "var(--color-ink)" }}>{q}</span>
-        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} style={{ color: "var(--color-muted)" }} />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease }} className="overflow-hidden">
-            <p className="pb-5 text-sm leading-relaxed max-w-2xl" style={{ color: "var(--color-ink-2)" }}>{a}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }
 
@@ -497,17 +488,16 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FAQ */}
-        <section id="faq" className="border-b scroll-mt-16" style={{ borderColor: "var(--color-rule)" }}>
-          <div className={`${wrap} py-20 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12`}>
-            <div className="lg:col-span-4">
-              <SectionHeader eyebrow="FAQ" title="Questions, answered." />
-            </div>
-            <div className="lg:col-span-8 border-t" style={{ borderColor: "var(--color-rule)" }}>
-              {FAQS.map((f) => <FaqItem key={f.q} {...f} />)}
-            </div>
-          </div>
-        </section>
+        {/* FAQ - Using Watermelon component */}
+        <div id="faq" className="scroll-mt-16 w-full max-w-[1280px] mx-auto relative border-b" style={{ borderColor: "var(--color-rule)" }}>
+           <Faq4
+             badge="Support"
+             title="Questions, answered."
+             description="Find out how BloodRelay works, how privacy is protected, and who can use the platform."
+             faqs={FAQ_ITEMS}
+             className="pb-24 pt-16"
+           />
+        </div>
 
         {/* Final CTA */}
         <section style={{ backgroundColor: "var(--color-paper-2)" }}>
@@ -524,36 +514,23 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t" style={{ borderColor: "var(--color-rule)" }}>
-        <div className={`${wrap} py-14 grid grid-cols-2 md:grid-cols-4 gap-10`}>
-          <div className="col-span-2 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <Droplet className="w-4 h-4" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
-              <span className="text-sm font-bold tracking-widest uppercase">BloodRelay</span>
-            </div>
-            <p className="text-sm max-w-xs leading-relaxed" style={{ color: "var(--color-muted)" }}>Real-time emergency blood coordination for patients, donors and hospitals.</p>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "var(--color-muted)" }}>Product</h4>
-            <ul className="space-y-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
-              <li><Link href="/emergency" className="hover:text-[var(--color-ink)]">Request blood</Link></li>
-              <li><Link href="/login" className="hover:text-[var(--color-ink)]">Become a donor</Link></li>
-              <li><Link href="/activity" className="hover:text-[var(--color-ink)]">Live activity</Link></li>
-              <li><Link href="/hospital/verify" className="hover:text-[var(--color-ink)]">For hospitals</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "var(--color-muted)" }}>Learn</h4>
-            <ul className="space-y-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
-              {NAV.map((n) => <li key={n.href}><a href={n.href} className="hover:text-[var(--color-ink)]">{n.label}</a></li>)}
-            </ul>
-          </div>
-        </div>
-        <div className={`${wrap} py-6 border-t text-xs flex flex-col sm:flex-row justify-between gap-2`} style={{ borderColor: "var(--color-rule)", color: "var(--color-muted)" }}>
-          <span>© {new Date().getFullYear()} BloodRelay. In a medical emergency, contact your hospital or local emergency number first.</span>
-        </div>
-      </footer>
+      {/* Footer - Using Watermelon component */}
+      <div className="border-t" style={{ borderColor: "var(--color-rule)" }}>
+         <Footer11 
+           badgeText="Emergency Network"
+           heading="Have questions or want to partner with us as a hospital?"
+           contactLabel="Reach out at:"
+           contactEmail="support@bloodrelay.com"
+           contactEmailHref="mailto:support@bloodrelay.com"
+           brandName="BloodRelay"
+           navLinks={NAV}
+           brandLogo={
+             <div className="flex items-center justify-center">
+                <Droplet className="w-16 h-16 lg:w-24 lg:h-24" style={{ color: "var(--color-accent)", fill: "var(--color-accent)", opacity: 0.2 }} />
+             </div>
+           }
+         />
+      </div>
     </div>
   );
 }
