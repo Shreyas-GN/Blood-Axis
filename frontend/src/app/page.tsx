@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { Droplet, MapPin, ArrowRight, Shield, CheckCircle2, Heart, Zap, FileText, Users, Clock, Search, Bell, Lock, Map as MapIcon, Building2, ChevronDown, Menu, X, Activity, BadgeCheck, Smartphone } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Droplet, MapPin, ArrowRight, Shield, CheckCircle2, Heart, Zap, FileText, Users, Clock, Search, Bell, Lock, Map as MapIcon, Building2, ChevronDown, Menu, X, Activity, BadgeCheck, Smartphone, Sun, Moon } from "lucide-react";
 import { useProfile } from "@/context/AuthContext";
 const SignedIn = ({ children }: { children: React.ReactNode }) => { const { user } = useProfile(); return user ? <>{children}</> : null; };
 const SignedOut = ({ children }: { children: React.ReactNode }) => { const { user } = useProfile(); return !user ? <>{children}</> : null; };
@@ -19,24 +19,61 @@ import { CommandPalette, useCommandPalette } from "@/components/ui/CommandPalett
  * gates: all-pass · studied: no
  */
 
-// Custom OKLCH Tokens for this bespoke page
-const customTokens = {
-  "--color-paper": "oklch(14% 0.01 20)",
-  "--color-paper-2": "oklch(18% 0.01 20)",
-  "--color-paper-3": "oklch(22% 0.01 20)",
-  "--color-ink": "oklch(95% 0.01 20)",
-  "--color-ink-2": "oklch(75% 0.01 20)",
-  "--color-rule": "oklch(26% 0.01 20)",
-  "--color-muted": "oklch(60% 0.01 20)",
-  "--color-accent": "oklch(55% 0.18 20)",
-  "--color-accent-ink": "oklch(95% 0.01 20)",
-  "--color-success": "oklch(65% 0.15 150)",
-  "--color-warning": "oklch(75% 0.15 70)",
-  // font fallback
-  "--font-display": "var(--font-display, 'Inter', sans-serif)",
-  "--font-body": "var(--font-body, 'Inter', sans-serif)",
-  "--font-mono": "var(--font-mono, 'JetBrains Mono', monospace)",
-} as React.CSSProperties;
+// Theme tokens: dark by default, light via system preference or explicit toggle
+const DARK_TOKENS = `
+  --color-paper: oklch(14% 0.01 20);
+  --color-paper-2: oklch(18% 0.01 20);
+  --color-paper-3: oklch(22% 0.01 20);
+  --color-ink: oklch(95% 0.01 20);
+  --color-ink-2: oklch(75% 0.01 20);
+  --color-rule: oklch(26% 0.01 20);
+  --color-muted: oklch(60% 0.01 20);
+  --color-accent: oklch(55% 0.18 20);
+  --color-accent-ink: oklch(95% 0.01 20);
+  --color-success: oklch(65% 0.15 150);
+  --color-warning: oklch(75% 0.15 70);
+`;
+const LIGHT_TOKENS = `
+  --color-paper: oklch(99% 0.004 20);
+  --color-paper-2: oklch(96.5% 0.006 20);
+  --color-paper-3: oklch(93% 0.008 20);
+  --color-ink: oklch(20% 0.02 20);
+  --color-ink-2: oklch(38% 0.02 20);
+  --color-rule: oklch(88% 0.008 20);
+  --color-muted: oklch(50% 0.015 20);
+  --color-accent: oklch(52% 0.2 25);
+  --color-accent-ink: oklch(98% 0.005 20);
+  --color-success: oklch(55% 0.15 150);
+  --color-warning: oklch(58% 0.15 70);
+`;
+const THEME_CSS = `
+  .landing { ${DARK_TOKENS} --font-display: var(--font-display, 'Inter', sans-serif); --font-body: var(--font-body, 'Inter', sans-serif); --font-mono: var(--font-mono, 'JetBrains Mono', monospace); color-scheme: dark; }
+  .landing :is(h1, h2, h3, h4, h5, h6) { color: var(--color-ink); }
+  @media (prefers-color-scheme: light) { .landing:not([data-theme="dark"]) { ${LIGHT_TOKENS} color-scheme: light; } }
+  .landing[data-theme="light"] { ${LIGHT_TOKENS} color-scheme: light; }
+  .landing[data-theme="dark"] { ${DARK_TOKENS} color-scheme: dark; }
+`;
+const THEME_KEY = "bloodrelay-theme";
+
+const themeListeners = new Set<() => void>();
+function subscribeTheme(cb: () => void) {
+  themeListeners.add(cb);
+  return () => { themeListeners.delete(cb); };
+}
+function getStoredTheme(): "light" | "dark" | null {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    return v === "light" || v === "dark" ? v : null;
+  } catch { return null; }
+}
+function subscribeSystemTheme(cb: () => void) {
+  const mq = window.matchMedia("(prefers-color-scheme: light)");
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+function getSystemLight() {
+  return window.matchMedia("(prefers-color-scheme: light)").matches;
+}
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const fadeIn = {
@@ -199,14 +236,25 @@ const primaryBtn = "h-12 px-7 rounded-sm text-sm font-bold uppercase tracking-wi
 export default function Home() {
   const { open: cmdOpen, setOpen: setCmdOpen } = useCommandPalette();
   const [menuOpen, setMenuOpen] = useState(false);
+  const theme = useSyncExternalStore(subscribeTheme, getStoredTheme, () => null);
+  const systemLight = useSyncExternalStore(subscribeSystemTheme, getSystemLight, () => false);
+  const resolvedTheme = theme ?? (systemLight ? "light" : "dark");
+
+  const toggleTheme = () => {
+    const next = resolvedTheme === "dark" ? "light" : "dark";
+    try { localStorage.setItem(THEME_KEY, next); } catch {}
+    themeListeners.forEach((l) => l());
+  };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col font-sans antialiased scroll-smooth selection:bg-red-500/30"
-         style={{ ...customTokens, backgroundColor: "var(--color-paper)", color: "var(--color-ink)" }}>
+    <div className="landing min-h-[100dvh] flex flex-col font-sans antialiased scroll-smooth selection:bg-red-500/30"
+         data-theme={theme ?? undefined}
+         style={{ backgroundColor: "var(--color-paper)", color: "var(--color-ink)" }}>
+      <style>{THEME_CSS}</style>
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b" style={{ borderColor: "var(--color-rule)", backgroundColor: "rgba(20, 20, 20, 0.88)", backdropFilter: "blur(12px)" }}>
+      <header className="sticky top-0 z-50 border-b" style={{ borderColor: "var(--color-rule)", backgroundColor: "color-mix(in oklab, var(--color-paper) 88%, transparent)", backdropFilter: "blur(12px)" }}>
         <div className={`${wrap} h-16 flex items-center justify-between`}>
           <Link href="/" className="flex items-center gap-2 outline-none group">
             <Droplet className="w-4 h-4 group-hover:scale-110 transition-transform" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
@@ -230,6 +278,11 @@ export default function Home() {
               <Link href="/login" className="hidden sm:block font-medium hover:opacity-80" style={{ color: "var(--color-ink-2)" }}>Sign in</Link>
               <Link href="/login" className="h-9 px-4 rounded-sm flex items-center text-xs font-bold uppercase tracking-wider hover:opacity-90" style={{ backgroundColor: "var(--color-ink)", color: "var(--color-paper)" }}>Become a donor</Link>
             </SignedOut>
+            <button onClick={toggleTheme} aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`} title="Toggle theme"
+                    className="relative w-9 h-9 rounded-sm border flex items-center justify-center hover:bg-[var(--color-paper-2)] transition-colors"
+                    style={{ borderColor: "var(--color-rule)", color: "var(--color-ink-2)" }}>
+              {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <button className="md:hidden p-1" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
