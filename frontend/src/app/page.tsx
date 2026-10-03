@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Droplet, MapPin, ArrowRight, Shield, CheckCircle2, Heart, Zap, FileText, Users, Clock, Search } from "lucide-react";
+import { Droplet, MapPin, ArrowRight, Shield, CheckCircle2, Heart, Zap, FileText, Users, Clock, Search, Bell, Lock, Map as MapIcon, Building2, ChevronDown, Menu, X, Activity, BadgeCheck, Smartphone } from "lucide-react";
 import { useProfile } from "@/context/AuthContext";
 const SignedIn = ({ children }: { children: React.ReactNode }) => { const { user } = useProfile(); return user ? <>{children}</> : null; };
 const SignedOut = ({ children }: { children: React.ReactNode }) => { const { user } = useProfile(); return !user ? <>{children}</> : null; };
@@ -121,210 +121,367 @@ function RequestPreviewCard() {
   );
 }
 
+const NAV = [
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#features", label: "Features" },
+  { href: "#compatibility", label: "Compatibility" },
+  { href: "#faq", label: "FAQ" },
+];
+
+const STEPS = [
+  { num: "01", title: "Post a request", desc: "Choose blood group, units, hospital and urgency. It takes under a minute, with no account needed for emergencies.", icon: FileText },
+  { num: "02", title: "We match donors nearby", desc: "Compatible, available donors within range are ranked by distance and alerted instantly by push notification.", icon: MapPin },
+  { num: "03", title: "A donor accepts", desc: "The first donors to accept appear on your live tracker with distance and ETA, while everyone else is told it is covered.", icon: Bell },
+  { num: "04", title: "Donate and close the loop", desc: "Contact opens only after acceptance. Mark the request fulfilled and the donor enters a safe cooldown period.", icon: CheckCircle2 },
+];
+
+const FEATURES = [
+  { icon: Zap, title: "Instant geo-matching", desc: "A spatial matching engine finds compatible donors around the hospital in seconds, nearest first." },
+  { icon: Bell, title: "Real-time alerts", desc: "Push notifications and live updates reach donors the moment a request that fits them is created." },
+  { icon: MapIcon, title: "Live emergency map", desc: "See the hospital, responding donors and their distance on one map as the situation develops." },
+  { icon: Lock, title: "Privacy by default", desc: "Donor identity and phone number stay hidden until they choose to accept a request." },
+  { icon: BadgeCheck, title: "Verified donors", desc: "Phone-verified profiles with age checks and a record of past donations keep the network trustworthy." },
+  { icon: Clock, title: "Cooldown protection", desc: "Donors are automatically paused after donating so nobody is alerted before they are medically ready." },
+];
+
+const COMPAT: { group: string; gives: string; gets: string }[] = [
+  { group: "O−", gives: "Everyone", gets: "O−" },
+  { group: "O+", gives: "O+, A+, B+, AB+", gets: "O−, O+" },
+  { group: "A−", gives: "A−, A+, AB−, AB+", gets: "O−, A−" },
+  { group: "A+", gives: "A+, AB+", gets: "O−, O+, A−, A+" },
+  { group: "B−", gives: "B−, B+, AB−, AB+", gets: "O−, B−" },
+  { group: "B+", gives: "B+, AB+", gets: "O−, O+, B−, B+" },
+  { group: "AB−", gives: "AB−, AB+", gets: "O−, A−, B−, AB−" },
+  { group: "AB+", gives: "AB+", gets: "Everyone" },
+];
+
+const FAQS = [
+  { q: "Is BloodRelay free?", a: "Yes. Posting requests and registering as a donor are free for everyone. There are no fees for patients, families or donors." },
+  { q: "Who can register as a donor?", a: "Anyone between 18 and 100 years old who is in good health. You verify your phone number, pick your blood group and location, and can switch availability on or off at any time." },
+  { q: "How is my privacy protected?", a: "Requesters only see that a donor has accepted. Your name and contact details are shared only after you tap Accept, and you can pause alerts whenever you like." },
+  { q: "How far away are donors alerted?", a: "The matching engine searches around the hospital and ranks compatible donors by distance, so the closest people are reached first." },
+  { q: "Can hospitals use BloodRelay?", a: "Yes. Hospitals can verify their facility and manage requests from a dedicated dashboard." },
+  { q: "Is this a replacement for a blood bank?", a: "No. BloodRelay complements blood banks by quickly reaching voluntary donors when stock is low or a rare group is needed urgently. In a medical emergency, always contact your hospital first." },
+];
+
+function SectionHeader({ eyebrow, title, sub, accent }: { eyebrow: string; title: string; sub?: string; accent?: boolean }) {
+  return (
+    <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} variants={stagger} className="max-w-3xl mb-14">
+      <motion.span variants={fadeIn} className="text-xs font-bold uppercase tracking-widest block mb-4" style={{ color: accent ? "var(--color-accent)" : "var(--color-muted)" }}>{eyebrow}</motion.span>
+      <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-medium leading-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-ink)" }}>{title}</motion.h2>
+      {sub && <motion.p variants={fadeIn} className="mt-5 text-base leading-relaxed max-w-2xl" style={{ color: "var(--color-ink-2)" }}>{sub}</motion.p>}
+    </motion.div>
+  );
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b" style={{ borderColor: "var(--color-rule)" }}>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className="w-full flex items-center justify-between gap-4 py-5 text-left">
+        <span className="text-base font-medium" style={{ color: "var(--color-ink)" }}>{q}</span>
+        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} style={{ color: "var(--color-muted)" }} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease }} className="overflow-hidden">
+            <p className="pb-5 text-sm leading-relaxed max-w-2xl" style={{ color: "var(--color-ink-2)" }}>{a}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+const wrap = "w-full max-w-[1280px] mx-auto px-5 md:px-8";
+const primaryBtn = "h-12 px-7 rounded-sm text-sm font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all";
+
 export default function Home() {
   const { open: cmdOpen, setOpen: setCmdOpen } = useCommandPalette();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col font-sans antialiased selection:bg-red-500/30"
+    <div className="min-h-[100dvh] flex flex-col font-sans antialiased scroll-smooth selection:bg-red-500/30"
          style={{ ...customTokens, backgroundColor: "var(--color-paper)", color: "var(--color-ink)" }}>
-      
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
-      {/* Nav: N13 Inline Command (Minimalist) */}
-      <header className="sticky top-0 z-50 h-16 border-b" style={{ borderColor: "var(--color-rule)", backgroundColor: "rgba(20, 20, 20, 0.85)", backdropFilter: "blur(12px)" }}>
-        <div className="w-full max-w-[1440px] mx-auto px-6 h-full flex items-center justify-between">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b" style={{ borderColor: "var(--color-rule)", backgroundColor: "rgba(20, 20, 20, 0.88)", backdropFilter: "blur(12px)" }}>
+        <div className={`${wrap} h-16 flex items-center justify-between`}>
           <Link href="/" className="flex items-center gap-2 outline-none group">
-            <Droplet className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
+            <Droplet className="w-4 h-4 group-hover:scale-110 transition-transform" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
             <span className="text-sm font-bold tracking-widest uppercase">BloodRelay</span>
           </Link>
 
-          <div className="flex items-center gap-6 text-sm">
+          <nav className="hidden md:flex items-center gap-8 text-sm" aria-label="Primary">
+            {NAV.map((n) => (
+              <a key={n.href} href={n.href} className="hover:text-[var(--color-ink)] transition-colors" style={{ color: "var(--color-ink-2)" }}>{n.label}</a>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4 text-sm">
             <SignedIn>
-              <button onClick={() => setCmdOpen(true)} className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-sm border transition-colors group"
-                      style={{ borderColor: "var(--color-rule)", color: "var(--color-muted)", backgroundColor: "var(--color-paper-2)" }}>
-                <Search className="w-3.5 h-3.5 group-hover:text-white transition-colors" />
-                <span>Command Menu</span>
-                <kbd className="text-[10px] font-mono opacity-60 ml-2">⌘K</kbd>
+              <button onClick={() => setCmdOpen(true)} className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-sm border" style={{ borderColor: "var(--color-rule)", color: "var(--color-muted)", backgroundColor: "var(--color-paper-2)" }}>
+                <Search className="w-3.5 h-3.5" /><span>Search</span><kbd className="text-[10px] font-mono opacity-60">⌘K</kbd>
               </button>
-              <Link href="/dashboard" className="font-medium hover:opacity-80 transition-opacity" style={{ color: "var(--color-ink-2)" }}>Dashboard</Link>
-              <Link href="/settings" className="font-medium hover:opacity-80 transition-opacity" style={{ color: "var(--color-ink-2)" }}>Settings</Link>
+              <Link href="/dashboard" className="h-9 px-4 rounded-sm flex items-center text-xs font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--color-ink)", color: "var(--color-paper)" }}>Dashboard</Link>
             </SignedIn>
             <SignedOut>
-              <Link href="/sign-in" className="font-medium hover:opacity-80 transition-opacity hidden sm:block" style={{ color: "var(--color-ink-2)" }}>Sign In</Link>
-              <Link href="/sign-up" className="h-8 px-4 rounded-sm flex items-center text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: "var(--color-ink)", color: "var(--color-paper)" }}>
-                Register
-              </Link>
+              <Link href="/login" className="hidden sm:block font-medium hover:opacity-80" style={{ color: "var(--color-ink-2)" }}>Sign in</Link>
+              <Link href="/login" className="h-9 px-4 rounded-sm flex items-center text-xs font-bold uppercase tracking-wider hover:opacity-90" style={{ backgroundColor: "var(--color-ink)", color: "var(--color-paper)" }}>Become a donor</Link>
             </SignedOut>
+            <button className="md:hidden p-1" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+        {menuOpen && (
+          <nav className="md:hidden border-t px-5 py-4 flex flex-col gap-4 text-sm" style={{ borderColor: "var(--color-rule)" }} aria-label="Mobile">
+            {NAV.map((n) => (
+              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} style={{ color: "var(--color-ink-2)" }}>{n.label}</a>
+            ))}
+          </nav>
+        )}
       </header>
 
       <main className="flex-1 w-full flex flex-col">
-        
-        {/* 04 Stat-Led Hero */}
-        <section className="w-full max-w-[1440px] mx-auto px-6 pt-24 pb-20 md:pt-32 md:pb-28 border-b" style={{ borderColor: "var(--color-rule)" }}>
-          <motion.div variants={stagger} initial="hidden" animate="show" className="max-w-4xl">
-            <motion.div variants={fadeIn} className="flex items-baseline gap-4 md:gap-8 flex-wrap mb-8">
-              <h1 className="font-mono font-bold leading-none tracking-tighter" style={{ fontSize: "clamp(5rem, 12vw, 10rem)", color: "var(--color-ink)" }}>
-                0<NumberTicker target={8} />
-              </h1>
-              <div className="flex flex-col">
-                <span className="font-mono text-2xl md:text-4xl font-semibold uppercase tracking-widest" style={{ color: "var(--color-accent)" }}>Min.</span>
-              </div>
-            </motion.div>
-            
-            <motion.h2 variants={fadeIn} className="text-2xl md:text-3xl font-medium mb-12 max-w-2xl leading-snug" style={{ color: "var(--color-ink-2)", fontFamily: "var(--font-display)" }}>
-              Average response time from alert to donor acceptance. Every second counts when a life is on the line.
-            </motion.h2>
-
-            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4">
-              <Link href="/emergency">
-                <button className="h-12 px-8 rounded-sm text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 w-full sm:w-auto hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}>
-                  Declare Emergency <ArrowRight className="w-4 h-4" />
-                </button>
-              </Link>
-              <Link href="/sign-up">
-                <button className="h-12 px-8 rounded-sm text-sm font-bold uppercase tracking-wider flex items-center justify-center w-full sm:w-auto border hover:bg-[var(--color-paper-2)] transition-colors"
-                        style={{ borderColor: "var(--color-rule)", color: "var(--color-ink)" }}>
-                  Join Donor Network
-                </button>
-              </Link>
-            </motion.div>
-
-            <motion.div variants={fadeIn} className="mt-12 flex items-center gap-6 text-xs font-mono tracking-widest uppercase" style={{ color: "var(--color-muted)" }}>
-              <div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5" /> End-to-end privacy</div>
-              <div className="hidden sm:flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Zero fees forever</div>
-            </motion.div>
-          </motion.div>
-        </section>
-
-        {/* Live Activity & Network Stats */}
-        <section className="w-full max-w-[1440px] mx-auto px-6 py-24 border-b" style={{ borderColor: "var(--color-rule)" }}>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8">
-            <div className="lg:col-span-5 flex flex-col justify-between">
-              <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={stagger}>
-                <motion.div variants={fadeIn} className="flex items-center gap-3 mb-6">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: "var(--color-success)" }} />
-                    <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: "var(--color-success)" }} />
-                  </span>
-                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-ink)" }}>Network Status: Active</span>
-                </motion.div>
-                <motion.h3 variants={fadeIn} className="text-3xl md:text-4xl font-medium mb-6 leading-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-ink)" }}>
-                  Real-time coordination across the subcontinent.
-                </motion.h3>
-                <motion.p variants={fadeIn} className="text-sm leading-relaxed mb-12 max-w-md" style={{ color: "var(--color-ink-2)" }}>
-                  We bypassed the middlemen. BloodRelay connects hospitals and families directly with verified, willing donors within a 20km radius. This is what decentralized urgency looks like.
-                </motion.p>
-                
-                <motion.div variants={fadeIn} className="grid grid-cols-2 gap-8 border-t pt-8" style={{ borderColor: "var(--color-rule)" }}>
-                  <div>
-                    <div className="text-3xl font-mono font-bold mb-2" style={{ color: "var(--color-ink)" }}><NumberTicker target={4200} suffix="+" /></div>
-                    <div className="text-xs uppercase tracking-widest" style={{ color: "var(--color-muted)" }}>Lives Supported</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-mono font-bold mb-2" style={{ color: "var(--color-ink)" }}><NumberTicker target={18700} suffix="+" /></div>
-                    <div className="text-xs uppercase tracking-widest" style={{ color: "var(--color-muted)" }}>Verified Donors</div>
-                  </div>
-                </motion.div>
+        {/* Hero */}
+        <section className="border-b" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} pt-16 pb-20 md:pt-24 md:pb-28 grid grid-cols-1 lg:grid-cols-12 gap-14 items-center`}>
+            <motion.div variants={stagger} initial="hidden" animate="show" className="lg:col-span-7">
+              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-8 text-xs font-medium" style={{ borderColor: "var(--color-rule)", color: "var(--color-ink-2)", backgroundColor: "var(--color-paper-2)" }}>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: "var(--color-success)" }} />
+                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: "var(--color-success)" }} />
+                </span>
+                Emergency blood network · live now
               </motion.div>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              <ActivityFeedPreview />
-            </div>
+              <motion.h1 variants={fadeIn} className="font-medium leading-[1.05] tracking-tight mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
+                Find a blood donor near you, <span style={{ color: "var(--color-accent)" }}>in minutes.</span>
+              </motion.h1>
+              <motion.p variants={fadeIn} className="text-lg leading-relaxed mb-10 max-w-xl" style={{ color: "var(--color-ink-2)" }}>
+                BloodRelay connects patients, families and hospitals with verified donors nearby in real time. Post a request, nearby matching donors are alerted instantly, and you track who is on the way.
+              </motion.p>
+              <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 mb-10">
+                <Link href="/emergency" className={primaryBtn} style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}>
+                  Request blood <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link href="/login" className={`${primaryBtn} border hover:bg-[var(--color-paper-2)]`} style={{ borderColor: "var(--color-rule)", color: "var(--color-ink)" }}>
+                  Register as donor
+                </Link>
+              </motion.div>
+              <motion.ul variants={fadeIn} className="flex flex-wrap gap-x-6 gap-y-3 text-xs font-mono tracking-wider uppercase" style={{ color: "var(--color-muted)" }}>
+                <li className="flex items-center gap-2"><Shield className="w-3.5 h-3.5" /> Private by default</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Free for everyone</li>
+                <li className="flex items-center gap-2"><Smartphone className="w-3.5 h-3.5" /> Works on any phone</li>
+              </motion.ul>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3, ease }} className="lg:col-span-5 flex justify-center lg:justify-end">
+              <RequestPreviewCard />
+            </motion.div>
           </div>
         </section>
 
-        {/* Narrative Workflow / Process */}
-        <section className="w-full max-w-[1440px] mx-auto px-6 py-24 border-b" style={{ borderColor: "var(--color-rule)" }}>
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="max-w-3xl mb-16">
-            <motion.span variants={fadeIn} className="text-xs font-bold uppercase tracking-widest block mb-4" style={{ color: "var(--color-muted)" }}>Protocol</motion.span>
-            <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-medium leading-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-ink)" }}>
-              Three phases. Minimal friction.<br/>Zero time wasted.
-            </motion.h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border" style={{ borderColor: "var(--color-rule)" }}>
+        {/* Stats band */}
+        <section className="border-b" style={{ borderColor: "var(--color-rule)", backgroundColor: "var(--color-paper-2)" }}>
+          <div className={`${wrap} py-10 grid grid-cols-2 md:grid-cols-4 gap-8`}>
             {[
-              { num: "01", title: "Broadcast Need", desc: "Specify blood type, location, and urgency. Under 60 seconds.", icon: FileText },
-              { num: "02", title: "Algorithmic Match", desc: "The engine pings compatible, verified donors within a 20km radius immediately.", icon: MapPin },
-              { num: "03", title: "Direct Relay", desc: "A donor accepts. Private contact channels open. Data moves securely.", icon: Clock }
-            ].map((step, idx) => (
-              <motion.div key={step.num} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }} variants={fadeIn}
-                          className={`p-8 md:p-12 ${idx !== 2 ? 'border-b md:border-b-0 md:border-r' : ''}`} style={{ borderColor: "var(--color-rule)" }}>
-                <div className="flex justify-between items-start mb-8">
-                  <step.icon className="w-6 h-6" style={{ color: "var(--color-ink-2)" }} />
-                  <span className="font-mono text-xl font-bold" style={{ color: "var(--color-rule)" }}>{step.num}</span>
-                </div>
-                <h3 className="text-lg font-medium mb-3" style={{ color: "var(--color-ink)" }}>{step.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--color-muted)" }}>{step.desc}</p>
-              </motion.div>
+              { v: 4200, s: "+", l: "Requests supported" },
+              { v: 18700, s: "+", l: "Registered donors" },
+              { v: 8, s: " min", l: "Avg. time to first accept" },
+              { v: 8, s: "", l: "Blood groups covered" },
+            ].map((x) => (
+              <div key={x.l}>
+                <div className="text-3xl md:text-4xl font-mono font-bold mb-1"><NumberTicker target={x.v} suffix={x.s} /></div>
+                <div className="text-xs uppercase tracking-widest" style={{ color: "var(--color-muted)" }}>{x.l}</div>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Split Studio: Donor Preview */}
-        <section className="w-full max-w-[1440px] mx-auto px-6 py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="order-2 lg:order-1 flex justify-center lg:justify-start">
-              <RequestPreviewCard />
-            </motion.div>
-
-            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="order-1 lg:order-2">
-              <motion.span variants={fadeIn} className="text-xs font-bold uppercase tracking-widest block mb-4" style={{ color: "var(--color-accent)" }}>For Donors</motion.span>
-              <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-medium leading-tight mb-6" style={{ fontFamily: "var(--font-display)", color: "var(--color-ink)" }}>
-                Radical clarity.
-              </motion.h2>
-              <motion.p variants={fadeIn} className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--color-ink-2)" }}>
-                When an alert triggers, you see only the critical vectors: blood type, facility, distance, and elapsed time. One tap to accept. Your identity remains cloaked until you engage.
-              </motion.p>
-              <motion.ul variants={fadeIn} className="space-y-4">
-                {["No commitment until acceptance.", "Identity protected by default.", "Silent mode available 24/7."].map((point, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm" style={{ color: "var(--color-muted)" }}>
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--color-rule)" }} />
-                    {point}
-                  </li>
-                ))}
-              </motion.ul>
-            </motion.div>
+        {/* Problem */}
+        <section className="border-b" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24`}>
+            <SectionHeader eyebrow="The problem" title="Finding blood shouldn't depend on who you know." sub="When a patient needs blood urgently, families spend precious hours calling contacts and posting on social media. BloodRelay replaces that scramble with one coordinated, trusted system." />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { icon: Clock, t: "Hours lost searching", d: "Phone chains and group messages are slow, unreliable and hard to verify." },
+                { icon: Users, t: "Donors don't know who needs them", d: "Willing donors nearby are never reached because there is no live signal of demand." },
+                { icon: Activity, t: "No visibility once asked", d: "Families can't tell who is coming, how far away they are or whether the need is already met." },
+              ].map((x) => (
+                <div key={x.t} className="p-6 rounded-sm border" style={{ borderColor: "var(--color-rule)", backgroundColor: "var(--color-paper-2)" }}>
+                  <x.icon className="w-5 h-5 mb-5" style={{ color: "var(--color-accent)" }} />
+                  <h3 className="text-base font-medium mb-2">{x.t}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--color-muted)" }}>{x.d}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Footer / Final CTA */}
-        <footer className="w-full border-t" style={{ borderColor: "var(--color-rule)", backgroundColor: "var(--color-paper-2)" }}>
-          <div className="w-full max-w-[1440px] mx-auto px-6 pt-24 pb-12">
-            <div className="max-w-2xl mb-24">
-              <h2 className="text-4xl md:text-6xl font-medium leading-none mb-8" style={{ fontFamily: "var(--font-display)", color: "var(--color-ink)" }}>
-                Standby to save a life.
-              </h2>
-              <Link href="/sign-up">
-                <button className="h-12 px-8 rounded-sm text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                        style={{ backgroundColor: "var(--color-ink)", color: "var(--color-paper)" }}>
-                  Register to the Network <ArrowRight className="w-4 h-4" />
-                </button>
-              </Link>
-            </div>
-            
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pt-8 border-t" style={{ borderColor: "var(--color-rule)" }}>
-              <div className="flex items-center gap-2">
-                <Droplet className="w-4 h-4" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
-                <span className="text-sm font-bold tracking-widest uppercase">BloodRelay</span>
-              </div>
-              <div className="flex flex-wrap gap-6 text-xs uppercase tracking-widest font-mono" style={{ color: "var(--color-muted)" }}>
-                <Link href="/emergency" className="hover:text-[var(--color-ink)] transition-colors">Emergency</Link>
-                <Link href="/privacy" className="hover:text-[var(--color-ink)] transition-colors">Privacy</Link>
-                <Link href="/terms" className="hover:text-[var(--color-ink)] transition-colors">Terms</Link>
-              </div>
-              <div className="text-xs font-mono" style={{ color: "var(--color-muted)" }}>
-                © {new Date().getFullYear()} OPERATIONAL
-              </div>
+        {/* How it works */}
+        <section id="how-it-works" className="border-b scroll-mt-16" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24`}>
+            <SectionHeader eyebrow="How it works" title="From request to donor in four steps." />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border" style={{ borderColor: "var(--color-rule)" }}>
+              {STEPS.map((step, idx) => (
+                <motion.div key={step.num} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }} variants={fadeIn}
+                            className={`p-8 ${idx !== STEPS.length - 1 ? "border-b lg:border-b-0 lg:border-r" : ""} ${idx % 2 === 0 && idx !== STEPS.length - 1 ? "md:border-r" : ""}`} style={{ borderColor: "var(--color-rule)" }}>
+                  <div className="flex justify-between items-start mb-8">
+                    <step.icon className="w-6 h-6" style={{ color: "var(--color-accent)" }} />
+                    <span className="font-mono text-xl font-bold" style={{ color: "var(--color-muted)" }}>{step.num}</span>
+                  </div>
+                  <h3 className="text-lg font-medium mb-3">{step.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--color-muted)" }}>{step.desc}</p>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </footer>
+        </section>
+
+        {/* Features */}
+        <section id="features" className="border-b scroll-mt-16" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24`}>
+            <SectionHeader eyebrow="Features" title="Built for speed, safety and trust." sub="Everything a patient, donor or hospital needs during a blood emergency, in one place." />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {FEATURES.map((f) => (
+                <div key={f.title} className="p-6 rounded-sm border transition-colors hover:border-[var(--color-muted)]" style={{ borderColor: "var(--color-rule)", backgroundColor: "var(--color-paper-2)" }}>
+                  <div className="w-10 h-10 rounded-sm flex items-center justify-center mb-5" style={{ backgroundColor: "var(--color-paper-3)" }}>
+                    <f.icon className="w-5 h-5" style={{ color: "var(--color-accent)" }} />
+                  </div>
+                  <h3 className="text-base font-medium mb-2">{f.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--color-muted)" }}>{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Live activity */}
+        <section className="border-b" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center`}>
+            <div className="lg:col-span-5">
+              <SectionHeader eyebrow="Live network" title="See the network respond in real time." sub="Requests, acceptances and fulfilled donations stream across cities as they happen." />
+              <Link href="/activity" className="inline-flex items-center gap-2 text-sm font-medium hover:opacity-80" style={{ color: "var(--color-accent)" }}>
+                View live activity <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="lg:col-span-6 lg:col-start-7"><ActivityFeedPreview /></div>
+          </div>
+        </section>
+
+        {/* Audiences */}
+        <section className="border-b" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24`}>
+            <SectionHeader eyebrow="Who it's for" title="One platform, three ways to help." />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {[
+                { icon: Heart, tag: "Patients & families", title: "Get help fast", pts: ["Post a request in under a minute", "Track responding donors live on a map", "Edit or close the request any time"], cta: "Request blood", href: "/emergency" },
+                { icon: Droplet, tag: "Donors", title: "Give when it matters", pts: ["One tap to accept, no commitment before", "Identity hidden until you accept", "Turn availability on or off whenever"], cta: "Become a donor", href: "/login" },
+                { icon: Building2, tag: "Hospitals", title: "Coordinate at scale", pts: ["Verify your facility", "Manage incoming and active requests", "Reach donors beyond your own registry"], cta: "Hospital portal", href: "/hospital/verify" },
+              ].map((a) => (
+                <div key={a.tag} className="p-8 rounded-sm border flex flex-col" style={{ borderColor: "var(--color-rule)", backgroundColor: "var(--color-paper-2)" }}>
+                  <a.icon className="w-6 h-6 mb-6" style={{ color: "var(--color-accent)" }} />
+                  <span className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "var(--color-muted)" }}>{a.tag}</span>
+                  <h3 className="text-xl font-medium mb-5">{a.title}</h3>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {a.pts.map((p) => (
+                      <li key={p} className="flex items-start gap-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
+                        <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--color-success)" }} />{p}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={a.href} className="inline-flex items-center gap-2 text-sm font-semibold hover:gap-3 transition-all">{a.cta} <ArrowRight className="w-4 h-4" /></Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Compatibility */}
+        <section id="compatibility" className="border-b scroll-mt-16" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24`}>
+            <SectionHeader eyebrow="Blood compatibility" title="Who can give to whom." sub="Matching only alerts donors whose blood group is compatible with the request." />
+            <div className="overflow-x-auto border rounded-sm" style={{ borderColor: "var(--color-rule)" }}>
+              <table className="w-full text-sm min-w-[520px]">
+                <thead>
+                  <tr style={{ backgroundColor: "var(--color-paper-2)", color: "var(--color-muted)" }} className="text-left text-xs uppercase tracking-widest">
+                    <th className="px-5 py-3 font-semibold">Blood group</th>
+                    <th className="px-5 py-3 font-semibold">Can donate to</th>
+                    <th className="px-5 py-3 font-semibold">Can receive from</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPAT.map((r) => (
+                    <tr key={r.group} className="border-t" style={{ borderColor: "var(--color-rule)" }}>
+                      <td className="px-5 py-3 font-mono font-bold" style={{ color: "var(--color-accent)" }}>{r.group}</td>
+                      <td className="px-5 py-3" style={{ color: "var(--color-ink-2)" }}>{r.gives}</td>
+                      <td className="px-5 py-3" style={{ color: "var(--color-ink-2)" }}>{r.gets}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section id="faq" className="border-b scroll-mt-16" style={{ borderColor: "var(--color-rule)" }}>
+          <div className={`${wrap} py-20 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12`}>
+            <div className="lg:col-span-4">
+              <SectionHeader eyebrow="FAQ" title="Questions, answered." />
+            </div>
+            <div className="lg:col-span-8 border-t" style={{ borderColor: "var(--color-rule)" }}>
+              {FAQS.map((f) => <FaqItem key={f.q} {...f} />)}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section style={{ backgroundColor: "var(--color-paper-2)" }}>
+          <div className={`${wrap} py-20 md:py-28 text-center`}>
+            <h2 className="text-4xl md:text-5xl font-medium leading-tight mb-6 max-w-3xl mx-auto" style={{ fontFamily: "var(--font-display)" }}>
+              Be the reason someone gets home tonight.
+            </h2>
+            <p className="text-base mb-10 max-w-xl mx-auto" style={{ color: "var(--color-ink-2)" }}>Join the network in under two minutes. Set your availability and we&apos;ll only reach out when someone nearby needs your blood group.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/login" className={primaryBtn} style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}>Register as donor <ArrowRight className="w-4 h-4" /></Link>
+              <Link href="/emergency" className={`${primaryBtn} border`} style={{ borderColor: "var(--color-rule)" }}>I need blood now</Link>
+            </div>
+          </div>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t" style={{ borderColor: "var(--color-rule)" }}>
+        <div className={`${wrap} py-14 grid grid-cols-2 md:grid-cols-4 gap-10`}>
+          <div className="col-span-2 md:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <Droplet className="w-4 h-4" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
+              <span className="text-sm font-bold tracking-widest uppercase">BloodRelay</span>
+            </div>
+            <p className="text-sm max-w-xs leading-relaxed" style={{ color: "var(--color-muted)" }}>Real-time emergency blood coordination for patients, donors and hospitals.</p>
+          </div>
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "var(--color-muted)" }}>Product</h4>
+            <ul className="space-y-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
+              <li><Link href="/emergency" className="hover:text-[var(--color-ink)]">Request blood</Link></li>
+              <li><Link href="/login" className="hover:text-[var(--color-ink)]">Become a donor</Link></li>
+              <li><Link href="/activity" className="hover:text-[var(--color-ink)]">Live activity</Link></li>
+              <li><Link href="/hospital/verify" className="hover:text-[var(--color-ink)]">For hospitals</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "var(--color-muted)" }}>Learn</h4>
+            <ul className="space-y-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
+              {NAV.map((n) => <li key={n.href}><a href={n.href} className="hover:text-[var(--color-ink)]">{n.label}</a></li>)}
+            </ul>
+          </div>
+        </div>
+        <div className={`${wrap} py-6 border-t text-xs flex flex-col sm:flex-row justify-between gap-2`} style={{ borderColor: "var(--color-rule)", color: "var(--color-muted)" }}>
+          <span>© {new Date().getFullYear()} BloodRelay. In a medical emergency, contact your hospital or local emergency number first.</span>
+        </div>
+      </footer>
     </div>
   );
 }

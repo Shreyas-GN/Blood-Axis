@@ -37,15 +37,15 @@ export function ActivityFeedPreview() {
 
   return (
     <div
-      className="w-full bg-white rounded-[var(--radius-card)] border border-[var(--color-border)] overflow-hidden"
-      style={{ boxShadow: "var(--shadow-card)" }}
+      className="w-full rounded-sm border overflow-hidden"
+      style={{ backgroundColor: "var(--color-paper-2, #1c1717)", borderColor: "var(--color-rule, #2e2828)" }}
     >
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-[var(--color-border-subtle)]">
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-[var(--color-rule,#2e2828)]">
         <span className="relative flex h-2 w-2 shrink-0">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-70" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]" />
         </span>
-        <span className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-[0.1em]">
+        <span className="text-[11px] font-semibold text-[var(--color-muted,#8a8282)] uppercase tracking-[0.1em]">
           Live activity
         </span>
       </div>
@@ -59,13 +59,13 @@ export function ActivityFeedPreview() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-border-subtle)] last:border-0"
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--color-rule,#2e2828)] last:border-0"
             >
               <span className="text-sm shrink-0 w-5 text-center">{item.icon}</span>
-              <span className="text-[13px] text-[var(--color-text-primary)] flex-1 leading-snug font-medium">
+              <span className="text-[13px] text-[var(--color-ink,#f2eded)] flex-1 leading-snug font-medium">
                 {item.text}
               </span>
-              <span className="text-[11px] text-[var(--color-text-muted)] font-[var(--font-mono)] shrink-0 tabular-nums">
+              <span className="text-[11px] text-[var(--color-muted,#8a8282)] font-[var(--font-mono)] shrink-0 tabular-nums">
                 {item.time}
               </span>
             </motion.li>
