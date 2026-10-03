@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { FaChevronDown } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
