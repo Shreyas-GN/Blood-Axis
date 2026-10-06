@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 import { Droplet, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { MotionConfig } from "framer-motion";
 import { useProfile } from "@/context/AuthContext";
+import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
 import { CommandPalette, useCommandPalette } from "@/components/ui/CommandPalette";
 import { NAV } from "./content";
 import { btnPrimary, wrap } from "./styles";
@@ -37,6 +38,13 @@ const THEME_CSS = `
   .landing[data-theme="light"] { ${LIGHT_TOKENS} color-scheme: light; }
   .landing[data-theme="dark"] { ${DARK_TOKENS} color-scheme: dark; }
   .landing { scroll-behavior: smooth; }
+  .landing :is(h1, h2, h3, h4, h5, h6, summary) { color: var(--color-ink); }
+  .landing :is(p, dt, dd, li, td, th) { color: inherit; }
+  .landing .bubble-layer { opacity: 0.6; }
+  @media (prefers-color-scheme: light) { .landing:not([data-theme="dark"]) .bubble-layer { opacity: 0.3; } }
+  .landing[data-theme="light"] .bubble-layer { opacity: 0.3; }
+  .landing[data-theme="dark"] .bubble-layer { opacity: 0.6; }
+  .landing .glass { background-color: color-mix(in oklab, var(--color-paper-2) 70%, transparent); backdrop-filter: blur(12px); }
   @media (prefers-reduced-motion: reduce) { .landing { scroll-behavior: auto; } }
 `;
 const THEME_KEY = "bloodrelay-theme";
@@ -88,6 +96,12 @@ export function LandingShell({ children, footer }: { children: React.ReactNode; 
       <div className="landing min-h-[100dvh] flex flex-col font-sans antialiased selection:bg-red-500/30" data-theme={theme ?? undefined} style={{ backgroundColor: "var(--color-paper)", color: "var(--color-ink)" }}>
         <style>{THEME_CSS}</style>
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[var(--color-ink)] focus:text-[var(--color-paper)]">Skip to content</a>
+        <BubbleBackground
+          interactive
+          aria-hidden="true"
+          colors={{ first: "220,38,38", second: "153,27,27", third: "239,68,68", fourth: "127,29,29", fifth: "185,28,28", sixth: "248,113,113" }}
+          className="bubble-layer !fixed inset-0 z-0 pointer-events-auto [contain:strict] [transform:translateZ(0)] bg-[var(--color-paper)]"
+        />
         <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
         <header className="sticky top-0 z-50 border-b" style={{ borderColor: "var(--color-rule)", backgroundColor: "color-mix(in oklab, var(--color-paper) 88%, transparent)", backdropFilter: "blur(12px)" }}>
@@ -132,8 +146,8 @@ export function LandingShell({ children, footer }: { children: React.ReactNode; 
           )}
         </header>
 
-        <main id="main" className="flex-1 w-full">{children}</main>
-        {footer}
+        <main id="main" className="relative z-10 flex-1 w-full">{children}</main>
+        <div className="relative z-10">{footer}</div>
       </div>
     </MotionConfig>
   );

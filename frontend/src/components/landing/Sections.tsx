@@ -63,7 +63,7 @@ export function WhoItsFor() {
         <h2 id="who-title" className={`${h2} mb-16 max-w-2xl`}>One network. Three people who need it.</h2>
         <ul className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {AUDIENCES.map((a) => (
-            <li key={a.tag} className="rounded-2xl border p-8 flex flex-col" style={{ ...rule, backgroundColor: "var(--color-paper-2)" }}>
+            <li key={a.tag} className="glass rounded-2xl border p-8 flex flex-col" style={rule}>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] mb-4" style={{ color: "var(--color-muted)" }}>{a.tag}</p>
               <h3 className="text-2xl font-semibold mb-4">{a.title}</h3>
               <p className="leading-relaxed mb-8 flex-1" style={ink2}>{a.desc}</p>
@@ -86,7 +86,7 @@ export function Compatibility() {
         <p className="text-lg md:text-xl leading-relaxed max-w-2xl mb-10" style={ink2}>
           We only alert donors whose blood group works for the request. If you&apos;re curious, the chart is below.
         </p>
-        <details className="group rounded-2xl border" style={rule}>
+        <details className="glass group rounded-2xl border" style={rule}>
           <summary className="flex items-center justify-between gap-4 cursor-pointer list-none px-6 py-5 font-semibold rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-ink)] [&::-webkit-details-marker]:hidden">
             Blood compatibility chart
             <ChevronDown className="w-5 h-5 transition-transform group-open:rotate-180" aria-hidden="true" />
@@ -141,7 +141,7 @@ export function Faq() {
 
 export function FinalCta() {
   return (
-    <section aria-labelledby="cta-title" className={`border-t ${sectionY}`} style={{ ...rule, backgroundColor: "var(--color-paper-2)" }}>
+    <section aria-labelledby="cta-title" className={`glass border-t ${sectionY}`} style={rule}>
       <div className={`${wrap} text-center`}>
         <h2 id="cta-title" className={`${h2} mb-8 max-w-3xl mx-auto`}>Be the reason someone gets home tonight.</h2>
         <p className="text-lg md:text-xl leading-relaxed max-w-xl mx-auto mb-10" style={ink2}>

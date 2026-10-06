@@ -11,8 +11,8 @@ function RequestCard() {
   return (
     <figure
       aria-label="Example of a live blood request"
-      className="w-full max-w-[460px] rounded-2xl border p-6 sm:p-8 shadow-[0_24px_80px_-32px_color-mix(in_oklab,var(--color-accent)_55%,transparent)]"
-      style={{ backgroundColor: "var(--color-paper-2)", borderColor: "var(--color-rule)" }}
+      className="glass w-full max-w-[460px] rounded-2xl border p-6 sm:p-8 shadow-[0_24px_80px_-32px_color-mix(in_oklab,var(--color-accent)_55%,transparent)]"
+      style={{ borderColor: "var(--color-rule)" }}
     >
       <div className="flex items-center justify-between mb-8">
         <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-ink-2)" }}>
