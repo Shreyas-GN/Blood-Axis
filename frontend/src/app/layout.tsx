@@ -51,6 +51,7 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   keywords: ["blood donor near me", "emergency blood", "find blood donor", "blood donation", "urgent blood request", "O negative blood needed", "blood donors India"],
   authors: [{ name: `${SITE_NAME} Team` }],
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "en_IN",
