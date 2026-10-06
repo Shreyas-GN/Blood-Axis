@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────
--- BloodRelay: Clear All User Data (Fresh Start)
+-- BloodAxis: Clear All User Data (Fresh Start)
 -- Run this in Supabase SQL Editor to wipe out all user-generated data.
 -- ─────────────────────────────────────────────────────────────
 

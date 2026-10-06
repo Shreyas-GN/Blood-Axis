@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: bloodrelay
+      POSTGRES_DB: bloodaxis
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./supabase_setup.sql:/docker-entrypoint-initdb.d/init.sql
@@ -42,7 +42,7 @@ services:
 
 networks:
   default:
-    name: bloodrelay-network
+    name: bloodaxis-network
 
 volumes:
   pgdata:
