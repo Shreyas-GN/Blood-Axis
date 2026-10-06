@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodRelay Skeleton System
+   Blood Axis Skeleton System
    ─ Replaces ALL spinners. Skeletons communicate progress
      while preserving layout stability.
    ─ Shimmer sweeps right → left (1.6s, ease-in-out, infinite)

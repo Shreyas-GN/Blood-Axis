@@ -54,7 +54,7 @@ const THEME_CSS = `
   .landing[data-theme="light"] { ${LIGHT_TOKENS} color-scheme: light; }
   .landing[data-theme="dark"] { ${DARK_TOKENS} color-scheme: dark; }
 `;
-const THEME_KEY = "bloodrelay-theme";
+const THEME_KEY = "bloodaxis-theme";
 
 const themeListeners = new Set<() => void>();
 function subscribeTheme(cb: () => void) {
@@ -194,12 +194,12 @@ const COMPAT: { group: string; gives: string; gets: string }[] = [
 ];
 
 const FAQS = [
-  { q: "Is BloodRelay free?", a: "Yes. Posting requests and registering as a donor are free for everyone. There are no fees for patients, families or donors." },
+  { q: "Is Blood Axis free?", a: "Yes. Posting requests and registering as a donor are free for everyone. There are no fees for patients, families or donors." },
   { q: "Who can register as a donor?", a: "Anyone between 18 and 100 years old who is in good health. You verify your phone number, pick your blood group and location, and can switch availability on or off at any time." },
   { q: "How is my privacy protected?", a: "Requesters only see that a donor has accepted. Your name and contact details are shared only after you tap Accept, and you can pause alerts whenever you like." },
   { q: "How far away are donors alerted?", a: "The matching engine searches around the hospital and ranks compatible donors by distance, so the closest people are reached first." },
-  { q: "Can hospitals use BloodRelay?", a: "Yes. Hospitals can verify their facility and manage requests from a dedicated dashboard." },
-  { q: "Is this a replacement for a blood bank?", a: "No. BloodRelay complements blood banks by quickly reaching voluntary donors when stock is low or a rare group is needed urgently. In a medical emergency, always contact your hospital first." },
+  { q: "Can hospitals use Blood Axis?", a: "Yes. Hospitals can verify their facility and manage requests from a dedicated dashboard." },
+  { q: "Is this a replacement for a blood bank?", a: "No. Blood Axis complements blood banks by quickly reaching voluntary donors when stock is low or a rare group is needed urgently. In a medical emergency, always contact your hospital first." },
 ];
 
 import { Faq4 } from "@/components/ui/faq-4";
@@ -250,7 +250,7 @@ export default function Home() {
         <div className={`${wrap} h-16 flex items-center justify-between`}>
           <Link href="/" className="flex items-center gap-2 outline-none group">
             <Droplet className="w-4 h-4 group-hover:scale-110 transition-transform" style={{ color: "var(--color-accent)", fill: "var(--color-accent)" }} />
-            <span className="text-sm font-bold tracking-widest uppercase">BloodRelay</span>
+            <span className="text-sm font-bold tracking-widest uppercase">Blood Axis</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm" aria-label="Primary">
@@ -317,7 +317,7 @@ export default function Home() {
                   Find a blood donor near you, <span style={{ color: "var(--color-accent)" }}>in minutes.</span>
                 </motion.h1>
                 <motion.p variants={fadeIn} className="text-lg leading-relaxed mb-10 max-w-xl" style={{ color: "var(--color-ink-2)" }}>
-                  BloodRelay connects patients, families and hospitals with verified donors nearby in real time. Post a request, nearby matching donors are alerted instantly, and you track who is on the way.
+                  Blood Axis connects patients, families and hospitals with verified donors nearby in real time. Post a request, nearby matching donors are alerted instantly, and you track who is on the way.
                 </motion.p>
                 <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 mb-10">
                   <Link href="/emergency" className={primaryBtn} style={{ backgroundColor: "var(--color-accent)", color: "var(--color-accent-ink)" }}>
@@ -365,7 +365,7 @@ export default function Home() {
         {/* Problem */}
         <section className="border-b" style={{ borderColor: "var(--color-rule)" }}>
           <div className={`${wrap} py-20 md:py-24`}>
-            <SectionHeader eyebrow="The problem" title="Finding blood shouldn't depend on who you know." sub="When a patient needs blood urgently, families spend precious hours calling contacts and posting on social media. BloodRelay replaces that scramble with one coordinated, trusted system." />
+            <SectionHeader eyebrow="The problem" title="Finding blood shouldn't depend on who you know." sub="When a patient needs blood urgently, families spend precious hours calling contacts and posting on social media. Blood Axis replaces that scramble with one coordinated, trusted system." />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { icon: Clock, t: "Hours lost searching", d: "Phone chains and group messages are slow, unreliable and hard to verify." },
@@ -493,7 +493,7 @@ export default function Home() {
            <Faq4
              badge="Support"
              title="Questions, answered."
-             description="Find out how BloodRelay works, how privacy is protected, and who can use the platform."
+             description="Find out how Blood Axis works, how privacy is protected, and who can use the platform."
              faqs={FAQ_ITEMS}
              className="pb-24 pt-16"
            />
@@ -522,7 +522,7 @@ export default function Home() {
            contactLabel="Reach out at:"
            contactEmail="support@bloodrelay.com"
            contactEmailHref="mailto:support@bloodrelay.com"
-           brandName="BloodRelay"
+           brandName="Blood Axis"
            navLinks={NAV}
            brandLogo={
              <div className="flex items-center justify-center">

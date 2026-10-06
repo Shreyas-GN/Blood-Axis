@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         description,
         type: 'article',
         publishedTime: request.created_at,
-        authors: ['BloodRelay'],
+        authors: ['Blood Axis'],
       },
       twitter: {
         card: 'summary_large_image',

@@ -96,7 +96,7 @@ export default function DashboardPage() {
             if (req?.contact_phone) {
                 await AlertService.sendSMS(
                     req.contact_phone,
-                    `BloodRelay ALERT: ${profile?.full_name || "A donor"} has offered to donate blood for ${req.patient_name || "your request"}. Check your dashboard for details.`
+                    `Blood Axis ALERT: ${profile?.full_name || "A donor"} has offered to donate blood for ${req.patient_name || "your request"}. Check your dashboard for details.`
                 );
             }
 
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                 <nav className="inline-flex items-center gap-6 px-3.5 py-2.5 bg-white/80 backdrop-blur-xl border border-[var(--color-border)] rounded-full shadow-[0_8px_24px_-12px_rgba(0,0,0,0.1)] pointer-events-auto">
                     <Link href="/" className="flex items-center gap-2 pl-2">
                         <Droplet className="w-4 h-4 fill-[var(--color-primary)] stroke-[var(--color-primary)]" />
-                        <span className="font-display font-bold text-sm tracking-tight text-[var(--color-text-primary)]">BloodRelay</span>
+                        <span className="font-display font-bold text-sm tracking-tight text-[var(--color-text-primary)]">Blood Axis</span>
                     </Link>
                     <div className="hidden md:flex items-center gap-4 border-l border-[var(--color-border)] pl-4">
                         <button
@@ -264,7 +264,7 @@ export default function DashboardPage() {
             {/* Ft2: Inline Rule Single Line Footer */}
             <footer className="w-full max-w-[1280px] mx-auto px-6 py-8 border-t border-[var(--color-border-subtle)]">
                 <p className="font-metric text-xs text-[var(--color-text-muted)] text-center">
-                    © 2026 · BloodRelay Core · Encrypted Network
+                    © 2026 · Blood Axis Core · Encrypted Network
                 </p>
             </footer>
 

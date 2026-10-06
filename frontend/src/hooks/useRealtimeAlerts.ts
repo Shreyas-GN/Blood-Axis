@@ -38,7 +38,7 @@ export function useRealtimeAlerts() {
                 new Notification(title, { 
                     body, 
                     icon: '/favicon.ico',
-                    tag: 'bloodrelay-alert',
+                    tag: 'bloodaxis-alert',
                     renotify: true,
                     silent: !isImmediate
                 } as any);
@@ -100,7 +100,7 @@ export function useRealtimeAlerts() {
                     const metadata = log.metadata || {};
                     
                     triggerNotification(
-                        metadata.title || 'BloodRelay Alert',
+                        metadata.title || 'Blood Axis Alert',
                         metadata.body || 'New update regarding a blood request.',
                         metadata.urgency === 'HIGH' || metadata.isImmediate === true
                     );

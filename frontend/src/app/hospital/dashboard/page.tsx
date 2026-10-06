@@ -150,7 +150,7 @@ export default function HospitalDashboard() {
         <div className="space-y-8">
           <Link href="/" className="flex items-center gap-3">
             <Droplet className="w-6 h-6 fill-[var(--color-primary)] stroke-[var(--color-primary)]" />
-            <span className="text-xl font-bold tracking-tight">BloodRelay</span>
+            <span className="text-xl font-bold tracking-tight">Blood Axis</span>
           </Link>
           
           <div className="space-y-1">

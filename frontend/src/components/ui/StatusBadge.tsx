@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodRelay StatusBadge
+   Blood Axis StatusBadge
    ─ Every status shows: COLOR + ICON + TEXT
      Color alone fails WCAG accessibility.
    ─ Used for request statuses and urgency levels.
