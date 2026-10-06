@@ -100,7 +100,7 @@ export function useRealtimeAlerts() {
                     const metadata = log.metadata || {};
                     
                     triggerNotification(
-                        metadata.title || 'BloodRelay Alert',
+                        metadata.title || 'BloodAxis Alert',
                         metadata.body || 'New update regarding a blood request.',
                         metadata.urgency === 'HIGH' || metadata.isImmediate === true
                     );

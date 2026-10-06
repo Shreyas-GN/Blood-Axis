@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         description,
         type: 'article',
         publishedTime: request.created_at,
-        authors: ['BloodRelay'],
+        authors: ['BloodAxis'],
       },
       twitter: {
         card: 'summary_large_image',
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   } catch (error) {
     return {
-      title: 'Emergency Blood Request | BloodRelay',
+      title: 'Emergency Blood Request',
     };
   }
 }

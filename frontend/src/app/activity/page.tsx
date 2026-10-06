@@ -68,7 +68,7 @@ export default function ActivityPage() {
                         <div className="w-px h-4 bg-[var(--color-border-subtle)]" aria-hidden="true" />
                         <Link href="/" className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md">
                             <Droplet className="w-4 h-4 fill-[var(--color-cta)] stroke-[var(--color-cta)]" />
-                            <span className="text-[15px] font-semibold tracking-tight">BloodRelay</span>
+                            <span className="text-[15px] font-semibold tracking-tight">BloodAxis</span>
                         </Link>
                     </div>
                 </nav>
@@ -83,7 +83,7 @@ export default function ActivityPage() {
                         Activity
                     </h1>
                     <p className="text-[var(--color-text-muted)] mt-1 text-[14px]">
-                        Every action you've taken on BloodRelay.
+                        Every action you've taken on BloodAxis.
                     </p>
                 </div>
 

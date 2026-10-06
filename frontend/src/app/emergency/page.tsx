@@ -150,7 +150,7 @@ export default function EmergencyPage() {
                     className="inline-flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors text-sm font-metric pointer-events-auto"
                 >
                     <span className="w-2 h-2 rounded-none bg-[var(--color-primary)]"></span>
-                    BloodRelay
+                    BloodAxis
                 </Link>
             </div>
 

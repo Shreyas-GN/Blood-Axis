@@ -35,7 +35,7 @@ export function SuccessCard({ patientName, bloodGroup, donorName }: Props) {
               : `Help has been confirmed for ${patientName}.`}
           </h2>
           <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-sm">
-            Thank you for trusting BloodRelay. Please coordinate directly with your donor to complete the process.
+            Thank you for trusting BloodAxis. Please coordinate directly with your donor to complete the process.
           </p>
         </div>
       </div>

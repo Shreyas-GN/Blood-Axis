@@ -165,7 +165,7 @@ export function EmptyStateFeed({ className }: { className?: string }) {
   return (
     <EmptyState
       title="No active requests right now"
-      message="BloodRelay is ready whenever someone nearby needs help. You'll be notified immediately."
+      message="BloodAxis is ready whenever someone nearby needs help. You'll be notified immediately."
       className={className}
     />
   );
