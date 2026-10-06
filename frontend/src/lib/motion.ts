@@ -1,7 +1,7 @@
 import { type Transition, type Variants } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodRelay Motion Config
+   BloodAxis Motion Config
    Philosophy: Explain change, never entertain.
    Timing: 150–400ms only. No bounce. No elastic springs.
    Easing: ease-out (cubic-bezier(0.16, 1, 0.3, 1)) — Linear-style
