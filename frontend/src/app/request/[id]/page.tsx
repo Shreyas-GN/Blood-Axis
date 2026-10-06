@@ -164,7 +164,7 @@ export default function RequestDetailPage() {
       if (request?.contact_phone) {
         await AlertService.sendSMS(
           request.contact_phone,
-          `BloodAxis ALERT: ${currentUserProfile.full_name || "A donor"} has offered to donate blood for ${request?.patient_name}. They may contact you shortly.`
+          `Blood Axis ALERT: ${currentUserProfile.full_name || "A donor"} has offered to donate blood for ${request?.patient_name}. They may contact you shortly.`
         );
       }
       const responses = await getResponsesForRequestAction(params.id as string);
@@ -550,7 +550,7 @@ export default function RequestDetailPage() {
           >
             <Shield className="w-4 h-4 shrink-0 text-[var(--color-text-muted)] mt-0.5" aria-hidden="true" />
             <p>
-              BloodAxis does not screen donors or verify medical history. Coordinate with your
+              Blood Axis does not screen donors or verify medical history. Coordinate with your
               medical professional before proceeding with any donations.
             </p>
           </motion.div>

@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodAxis Button System
+   Blood Axis Button System
    ─ All sizes enforce minimum touch targets per design system:
      sm  = 44px (minimum accessible touch target)
      md  = 52px (primary CTA default)

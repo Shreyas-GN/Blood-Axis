@@ -6,7 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/Button";
 import Link from "next/link";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodAxis EmptyState
+   Blood Axis EmptyState
    ─ Tone: warm, human, reassuring. Never cold or abandoned.
    ─ Design system rule: users should never feel the system
      stopped or has nothing to offer them.
@@ -165,7 +165,7 @@ export function EmptyStateFeed({ className }: { className?: string }) {
   return (
     <EmptyState
       title="No active requests right now"
-      message="BloodAxis is ready whenever someone nearby needs help. You'll be notified immediately."
+      message="Blood Axis is ready whenever someone nearby needs help. You'll be notified immediately."
       className={className}
     />
   );

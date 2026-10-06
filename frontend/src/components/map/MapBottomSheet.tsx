@@ -19,7 +19,7 @@ interface MapBottomSheetProps {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  searching:      "BloodAxis is actively searching",
+  searching:      "Blood Axis is actively searching",
   donor_accepted: "A donor has accepted",
   fulfilled:      "Request fulfilled",
   cancelled:      "Request cancelled",

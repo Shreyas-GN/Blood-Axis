@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────
--- BloodAxis: Clear All User Data (Fresh Start)
+-- Blood Axis: Clear All User Data (Fresh Start)
 -- Run this in Supabase SQL Editor to wipe out all user-generated data.
 -- ─────────────────────────────────────────────────────────────
 

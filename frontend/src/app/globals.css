@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────────────────────
-   BLOODAXIS DESIGN SYSTEM — PHASE 1 FOUNDATION
+   BLOOD AXIS DESIGN SYSTEM — PHASE 1 FOUNDATION
    Philosophy: Citizen × Stripe × Linear × Uber × Apple Health
    Priority: Trust → Clarity → Speed → Emotional Calm
    ───────────────────────────────────────────────────────────── */
@@ -55,7 +55,7 @@
   ── */
 
   /* Core brand */
-  --color-primary: #DC2626;         /* BloodAxis Red */
+  --color-primary: #DC2626;         /* Blood Axis Red */
   --color-primary-hover: #B91C1C;   /* Hover */
   --color-cta: #DC2626;             /* Interactive action */
   --color-cta-hover: #B91C1C;       /* Hover */

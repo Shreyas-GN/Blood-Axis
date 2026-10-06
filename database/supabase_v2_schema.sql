@@ -1,5 +1,5 @@
 -- ============================================================
--- BloodAxis V2 — Clean Database Initialization
+-- Blood Axis V2 — Clean Database Initialization
 -- Project: rjynjbvvgivwyexzziek.supabase.co
 -- Generated: 2026-06-21
 --

@@ -281,7 +281,7 @@ export default function EmergencyMapPage() {
                   Expanding the search
                 </p>
                 <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                  No donors in this area yet. BloodAxis is widening the radius. Stay close — help is on the way.
+                  No donors in this area yet. Blood Axis is widening the radius. Stay close — help is on the way.
                 </p>
               </div>
             </div>

@@ -286,7 +286,7 @@ export class AlertEngineService {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             to: donor.phone,
-                            message: `URGENT: Blood required at ${request.hospital_name}. Respond on BloodAxis.`
+                            message: `URGENT: Blood required at ${request.hospital_name}. Respond on Blood Axis.`
                         })
                     });
                 }

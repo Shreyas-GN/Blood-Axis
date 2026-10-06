@@ -1,8 +1,8 @@
-# BloodAxis
+# Blood Axis
 
-**When someone needs blood, every minute counts. BloodAxis finds the people who can give it — fast.**
+**When someone needs blood, every minute counts. Blood Axis finds the people who can give it — fast.**
 
-BloodAxis is an emergency blood coordination platform. It connects families, hospitals, and nearby donors in real time, so a request for blood reaches the right people within moments instead of being lost in a flurry of phone calls and forwarded messages.
+Blood Axis is an emergency blood coordination platform. It connects families, hospitals, and nearby donors in real time, so a request for blood reaches the right people within moments instead of being lost in a flurry of phone calls and forwarded messages.
 
 ---
 
@@ -10,10 +10,10 @@ BloodAxis is an emergency blood coordination platform. It connects families, hos
 
 When a patient needs blood urgently, families usually start the same scramble: calling relatives, posting in WhatsApp groups, asking around the hospital. It is slow, stressful, and there is no way to know who is actually nearby, who has the right blood group, or whether anyone is on the way.
 
-## What BloodAxis does
+## What Blood Axis does
 
-1. **Ask for blood in under a minute.** Pick the blood group, how many units, and how urgent it is. You can even type or paste a plain message like *"Need 2 units O positive urgently at City Hospital"* and BloodAxis fills in the form for you.
-2. **Reach the right donors automatically.** BloodAxis looks for compatible donors close to the hospital and alerts them straight away with a push notification.
+1. **Ask for blood in under a minute.** Pick the blood group, how many units, and how urgent it is. You can even type or paste a plain message like *"Need 2 units O positive urgently at City Hospital"* and Blood Axis fills in the form for you.
+2. **Reach the right donors automatically.** Blood Axis looks for compatible donors close to the hospital and alerts them straight away with a push notification.
 3. **Watch help arrive.** Donors respond, and the request page updates live, so you can see who has accepted and how far away they are.
 4. **Close the loop.** Once the need is met, the request is marked complete and donors are recognised in their activity history.
 
@@ -54,7 +54,7 @@ docker-compose up --build
 
 Then open http://localhost:3000.
 
-You'll need accounts and keys for the services BloodAxis relies on (sign-in, database, notifications, maps, AI). Copy the example environment files in each folder and fill them in.
+You'll need accounts and keys for the services Blood Axis relies on (sign-in, database, notifications, maps, AI). Copy the example environment files in each folder and fill them in.
 
 ## What's inside
 
