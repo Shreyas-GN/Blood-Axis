@@ -46,27 +46,42 @@ Live site: **https://bloodaxis.netlify.app**
 
 ## Run it locally
 
-The quickest way is Docker:
+Blood Axis uses [Convex](https://convex.dev) for the database, server functions and sign-in.
 
 ```bash
-docker-compose up --build
+cd frontend
+npm install
+cp .env.local.example .env.local
+
+# 1. Create/connect a Convex dev deployment (writes NEXT_PUBLIC_CONVEX_URL to .env.local
+#    and keeps convex/_generated up to date). Leave it running.
+npx convex dev
+
+# 2. One-time: generate the sign-in keys and set the site URL on the Convex deployment.
+npx @convex-dev/auth
+
+# 3. In another terminal
+npm run dev
 ```
 
 Then open http://localhost:3000.
 
-You'll need accounts and keys for the services Blood Axis relies on (sign-in, database, notifications, maps, AI). Copy the example environment files in each folder and fill them in.
+Optional services are configured as **Convex environment variables**, not in `.env.local`
+(`npx convex env set NAME value`): `APP_URL`, `TWILIO_*` (SMS and phone OTP), `FIREBASE_*`
+(push), `TELEGRAM_*`. Without them, SMS codes are printed in the Convex logs and push falls
+back to the in-app inbox. `GROQ_API_KEY` stays in `.env.local` (used by the Next.js route).
 
 ## What's inside
 
 | Folder | Purpose |
 |---|---|
 | `frontend/` | The app people use: landing page, request wizard, map, dashboards |
-| `matching-engine/` | The service that finds nearby donors for a request |
-| `database/` | The database schema |
+| `frontend/convex/` | The backend: schema, sign-in, requests, donor matching and alert escalation |
+| `docs/` | Design notes and the migration plan |
 
 ## Built with
 
-Next.js, Django, FastAPI, Supabase (PostgreSQL + PostGIS), Clerk, Firebase Cloud Messaging, MapLibre, and Groq.
+Next.js, Convex (database and authentication), Firebase Cloud Messaging, Twilio, MapLibre, and Groq.
 
 ---
 

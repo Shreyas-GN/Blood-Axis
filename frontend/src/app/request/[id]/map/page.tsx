@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useProfile } from "@/context/AuthContext";
 import Link from "next/link";
 import { ArrowLeft, Droplet } from "lucide-react";
-import { RequestService } from "@/services/request.service";
-import { DonorService } from "@/services/donor.service";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { EmergencyMap, type DonorMarkerData, type DonorState } from "@/components/map/EmergencyMap";
 import { MapBottomSheet } from "@/components/map/MapBottomSheet";
 import { MapOverlayCard } from "@/components/map/MapOverlayCard";
@@ -29,12 +30,14 @@ interface BloodRequest {
 }
 
 interface NearbyDonor {
-  id: number;
+  id: string;
   full_name?: string;
   name?: string;
   blood_group: string;
   distance_km: number;
   distance_meters?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -60,7 +63,7 @@ function parseCenter(location?: string): [number, number] {
 function generateDonorPositions(
   center: [number, number],
   donors: NearbyDonor[],
-  acceptedIds: Set<number>
+  acceptedIds: Set<string>
 ): DonorMarkerData[] {
   const [lng, lat] = center;
   return donors.map((donor, i) => {
@@ -69,7 +72,7 @@ function generateDonorPositions(
     const kmDist  = donor.distance_km || (donor.distance_meters ? donor.distance_meters / 1000 : 3 + i);
     const dLat    = kmDist / 111.32;
     const dLng    = kmDist / (111.32 * Math.cos((lat * Math.PI) / 180));
-    const jitter  = (Math.sin(donor.id * 3.7) * 0.3 + 0.85); // deterministic "random" scale
+    const jitter  = 1;
 
     const state: DonorState = acceptedIds.has(donor.id)
       ? "accepted"
@@ -77,10 +80,12 @@ function generateDonorPositions(
       ? "available"
       : "searching";
 
+    // Server returns coordinates rounded to ~1 km; use them when available.
+    const hasCoords = donor.latitude != null && donor.longitude != null;
     return {
       id:         String(donor.id),
-      lat:        lat + dLat * Math.sin(angle) * jitter,
-      lng:        lng + dLng * Math.cos(angle) * jitter,
+      lat:        hasCoords ? donor.latitude! : lat + dLat * Math.sin(angle) * jitter,
+      lng:        hasCoords ? donor.longitude! : lng + dLng * Math.cos(angle) * jitter,
       name:       donor.full_name || donor.name || `Donor ${i + 1}`,
       bloodGroup: donor.blood_group,
       state,
@@ -106,14 +111,40 @@ export default function EmergencyMapPage() {
   const router = useRouter();
   const { user, isLoading: isLoaded } = useProfile();
 
-  const [request,          setRequest]          = useState<BloodRequest | null>(null);
-  const [donorMarkers,     setDonorMarkers]      = useState<DonorMarkerData[]>([]);
-  const [donorsNotified,   setDonorsNotified]    = useState(0);
-  const [acceptedDonors,   setAcceptedDonors]    = useState<any[]>([]);
-  const [currentProfile,   setCurrentProfile]    = useState<any | null>(null);
-  const [loading,          setLoading]           = useState(true);
+  const { profile: currentProfile } = useProfile();
+  const requestData = useQuery(api.requests.get, params.id ? { id: String(params.id) } : "skip");
+  const request = (requestData ?? null) as unknown as BloodRequest | null;
+  const requestId = requestData?.id as Id<"bloodRequests"> | undefined;
+  const isOwn = !!requestData && requestData.requester_id === currentProfile?.id;
+  const open = requestData?.status === "searching" || requestData?.status === "donor_accepted";
+  const nearby = useQuery(api.donors.nearbyForRequest, requestId && isOwn && open ? { requestId, radiusKm: 20 } : "skip");
+  const responses = useQuery(api.responses.listForRequest, requestId ? { requestId } : "skip");
+  const respond = useMutation(api.responses.respond);
   const [accepting,        setAccepting]         = useState(false);
   const [elapsedMs,        setElapsedMs]         = useState(0);
+  const loading = requestData === undefined;
+  const acceptedDonors = useMemo(() => (responses ?? []).filter((r) => r.status !== "CANCELLED") as any[], [responses]);
+  const donorsNotified = nearby?.length ?? 0;
+
+  useEffect(() => {
+    if (requestData === null) router.push("/dashboard");
+  }, [requestData, router]);
+
+  const donorMarkers = useMemo<DonorMarkerData[]>(() => {
+    if (!requestData || !nearby) return [];
+    const center = parseCenter(requestData.location ?? (requestData.latitude != null ? `POINT(${requestData.longitude} ${requestData.latitude})` : undefined));
+    const acceptedIds = new Set<string>(acceptedDonors.map((r: any) => r.donor_id));
+    const normalized: NearbyDonor[] = nearby.map((d) => ({
+      id: d.id as any,
+      full_name: d.full_name,
+      blood_group: d.blood_group,
+      distance_km: d.distance_meters / 1000,
+      distance_meters: d.distance_meters,
+      latitude: d.latitude,
+      longitude: d.longitude,
+    }));
+    return generateDonorPositions(center, normalized, acceptedIds);
+  }, [requestData, nearby, acceptedDonors]);
 
   // Elapsed timer
   useEffect(() => {
@@ -124,74 +155,17 @@ export default function EmergencyMapPage() {
     return () => clearInterval(id);
   }, [request]);
 
-  // Data fetch
-  useEffect(() => {
-    if (!params.id) return;
-
-    const load = async () => {
-      try {
-        const data = await RequestService.getRequestById(params.id as string);
-        setRequest(data as any);
-
-        const center = parseCenter((data as any).location);
-
-        // Fetch nearby donors
-        if (data.status === "searching" || data.status === "donor_accepted") {
-          try {
-            const nearby = await DonorService.getNearbyDonors(
-              center[1], center[0], 20, data.blood_group
-            );
-            setDonorsNotified(nearby.length);
-
-            // Accepted donor IDs for highlighting
-            let acceptedIds = new Set<number>();
-            try {
-              const responses = await DonorService.getResponsesForRequest(params.id as string);
-              setAcceptedDonors(responses);
-              acceptedIds = new Set(responses.map((r: any) => r.donor_id));
-            } catch { /* silent */ }
-
-            const normalized: NearbyDonor[] = nearby.map((d: any) => ({
-              id:           d.id,
-              full_name:    d.full_name,
-              name:         d.name,
-              blood_group:  d.blood_group,
-              distance_km:  d.distance_km ?? (d.distance_meters ? d.distance_meters / 1000 : 5),
-              distance_meters: d.distance_meters,
-            }));
-
-            setDonorMarkers(generateDonorPositions(center, normalized, acceptedIds));
-          } catch { /* silent */ }
-        }
-      } catch {
-        // Request not found — redirect back
-        router.push("/dashboard");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [params.id, router]);
-
-  // Current user profile (for "I can help" action)
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-    DonorService.getProfile(user.id)
-      .then(setCurrentProfile)
-      .catch(() => null);
-  }, [isLoaded, user]);
-
   const handleHelp = useCallback(async () => {
     if (!currentProfile?.id) { router.push("/settings"); return; }
     setAccepting(true);
     try {
-      await DonorService.submitDonorResponse(params.id as string, currentProfile.id.toString());
+      if (!requestId) return;
+      await respond({ requestId, status: "ACCEPTED" });
       router.push(`/request/${params.id}`);
     } catch {
       setAccepting(false);
     }
-  }, [currentProfile, params.id, router]);
+  }, [currentProfile, params.id, requestId, respond, router]);
 
   // ── Derived ──────────────────────────────────────────────────
 

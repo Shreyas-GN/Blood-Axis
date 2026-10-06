@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from "@/context/AuthContext";
 import { registerForPushNotifications } from '@/lib/firebase/messaging';
+import { useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import { Bell, X, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function NotificationPrompt() {
     const { user, profile, isLoading: isLoaded } = useProfile();
+    const registerToken = useMutation(api.users.registerFcmToken);
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -29,7 +32,7 @@ export function NotificationPrompt() {
         if (!user) return;
         setLoading(true);
         try {
-            const token = await registerForPushNotifications(user.id);
+            const token = await registerForPushNotifications((t) => registerToken({ token: t }));
             if (token) {
                 setSuccess(true);
                 setTimeout(() => setShow(false), 2000);

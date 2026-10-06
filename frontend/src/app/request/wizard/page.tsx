@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/context/AuthContext";
-import { logActivityAction } from "@/app/actions/activity.actions";
+import { useMutation } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { api } from "../../../../convex/_generated/api";
+import { toE164 } from "@/lib/phone";
+import { getCurrentPosition } from "@/lib/geolocation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,8 +26,6 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/Input";
-import { supabaseClient as supabase } from "@/lib/supabase/client";
-import { DonorService } from "@/services/donor.service";
 import { StepIndicator } from "@/components/wizard/StepIndicator";
 import { BloodGroupCard } from "@/components/wizard/BloodGroupCard";
 import { HospitalResultCard, type Hospital } from "@/components/wizard/HospitalResultCard";
@@ -34,6 +36,24 @@ import { slideUpFade, staggerContainer } from "@/lib/motion";
 // ── Constants ────────────────────────────────────────────────
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+
+// Approximate hospital coordinates, used to find donors near the right place.
+const HOSPITAL_COORDS: Record<string, { lat: number; lng: number }> = {
+  "aiims-delhi": { lat: 28.5672, lng: 77.21 },
+  "apollo-hyd": { lat: 17.417, lng: 78.4106 },
+  "fortis-gurgaon": { lat: 28.4503, lng: 77.072 },
+  "manipal-blr": { lat: 12.9583, lng: 77.6485 },
+  "kims-hyd": { lat: 17.444, lng: 78.4983 },
+  "lilavati-mum": { lat: 19.0509, lng: 72.8294 },
+  "pgimer-chd": { lat: 30.7649, lng: 76.7765 },
+  "cmc-vellore": { lat: 12.9249, lng: 79.1353 },
+  "medanta-grg": { lat: 28.4395, lng: 77.0426 },
+  "narayana-blr": { lat: 12.819, lng: 77.691 },
+  "tata-kol": { lat: 22.5806, lng: 88.4879 },
+  "max-delhi": { lat: 28.5276, lng: 77.2118 },
+  "ruby-kol": { lat: 22.5136, lng: 88.4044 },
+  "care-hyd": { lat: 17.4126, lng: 78.4482 },
+};
 
 const STATIC_HOSPITALS: Hospital[] = [
   { id: "aiims-delhi", name: "AIIMS Delhi", city: "New Delhi", distance: "3.1 km" },
@@ -98,6 +118,9 @@ const slideVariants = {
 export default function RequestWizardPage() {
   const router = useRouter();
   const { user } = useProfile();
+  const { signIn } = useAuthActions();
+  const createRequest = useMutation(api.requests.create);
+  const updateMyProfile = useMutation(api.users.update);
 
   // Step 0 = AI parser, 1–5 = wizard, 6 = OTP
   const [currentStep, setCurrentStep] = useState(0);
@@ -105,7 +128,6 @@ export default function RequestWizardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState("");
-  const [isMockMode, setIsMockMode] = useState(false);
 
   // AI parser
   const [aiInput, setAiInput] = useState("");
@@ -211,95 +233,69 @@ export default function RequestWizardPage() {
 
   // ── OTP & Submission ───────────────────────────────────────
 
+  function friendly(err: unknown, fallback: string) {
+    const msg = err instanceof Error ? err.message : "";
+    if (/InvalidSecret|Could not verify code|Invalid code/i.test(msg)) return "That code is incorrect or has expired.";
+    return msg && msg.length < 160 ? msg : fallback;
+  }
+
   async function handleSendOtp() {
     setLoading(true);
     setError(null);
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        phone: formData.contact_phone,
-      });
-      if (otpError) {
-        setIsMockMode(true);
-      }
+      await signIn("phone", { phone: toE164(formData.contact_phone) });
       goTo(6);
-    } catch {
-      setIsMockMode(true);
-      goTo(6);
+    } catch (err) {
+      setError(friendly(err, "We couldn't send a verification code. Check the number and try again."));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function resolveCoords(): Promise<{ lat: number; lng: number }> {
+    const known = selectedHospitalId ? HOSPITAL_COORDS[selectedHospitalId] : undefined;
+    if (known) return known;
+    try {
+      const pos = await getCurrentPosition();
+      return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    } catch {
+      throw new Error("Pick a hospital from the list, or allow location access, so we can find donors nearby.");
     }
   }
 
   async function handleVerifyAndSubmit() {
     setLoading(true);
     setError(null);
-    let finalUserId = user?.id;
 
     try {
-      if (!user) {
-        if (isMockMode) {
-          const { data, error: anonError } = await supabase.auth.signInAnonymously();
-          if (anonError) throw anonError;
-          finalUserId = data.user?.id;
-        } else {
-          const { data, error: verifyError } = await supabase.auth.verifyOtp({
-            phone: formData.contact_phone,
-            token: otpCode,
-            type: "sms",
-          });
-          if (verifyError) throw verifyError;
-          finalUserId = data.user?.id;
-        }
+      const coords = await resolveCoords();
 
-        if (finalUserId) {
-          await DonorService.updateProfile(finalUserId, {
-            full_name: formData.patient_name + " (Requester)",
-            phone: formData.contact_phone,
-            city: formData.city,
-            blood_group: formData.blood_group as any,
-            is_donor: false,
-          });
-        }
+      if (!user) {
+        await signIn("phone", { phone: toE164(formData.contact_phone), code: otpCode });
+        await updateMyProfile({
+          fullName: `${formData.patient_name} (Requester)`,
+          phone: toE164(formData.contact_phone),
+          city: formData.city || undefined,
+        });
       }
 
-      if (!finalUserId) throw new Error("Authentication failed.");
-
-      const response = await fetch('/api/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requester_id: finalUserId,
-          patient_name: formData.patient_name,
-          hospital_name: formData.hospital_name,
-          city: formData.city,
-          contact_phone: formData.contact_phone,
-          blood_group: formData.blood_group as any,
-          units: formData.units,
-          urgency_level: formData.urgency_level as any,
-          status: "searching",
-          note: "",
-          requester_relation: "OTHER",
-          location: "POINT(0 0)",
-          latitude: null,
-          longitude: null,
-        }),
+      await createRequest({
+        patientName: formData.patient_name,
+        hospitalName: formData.hospital_name,
+        city: formData.city || undefined,
+        contactPhone: toE164(formData.contact_phone),
+        bloodGroup: formData.blood_group as (typeof BLOOD_GROUPS)[number],
+        units: formData.units,
+        urgencyLevel: formData.urgency_level,
+        lat: coords.lat,
+        lng: coords.lng,
+        location: `POINT(${coords.lng} ${coords.lat})`,
+        requesterRelation: "OTHER",
       });
 
-      const json = await response.json();
-      if (!response.ok) {
-        throw new Error(json.error || 'Failed to create request');
-      }
-      const newRequest = json.request;
-
-      await logActivityAction(
-        'request_created',
-        `Created a blood request for ${formData.patient_name} at ${formData.hospital_name} (${formData.blood_group}, ${formData.urgency_level}).`,
-        newRequest?.id?.toString() ?? null
-      );
-
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "We couldn't submit your request. Please try again.");
+    } catch (err) {
+      setError(friendly(err, "We couldn't submit your request. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -783,11 +779,6 @@ export default function RequestWizardPage() {
                   {formData.contact_phone}
                 </strong>
                 .
-                {isMockMode && (
-                  <span className="block mt-3 text-[var(--color-warn)] text-[0.8125rem] bg-[var(--color-warn-light)] p-2.5 rounded-[10px]">
-                    SMS unavailable — enter any 6 digits to continue.
-                  </span>
-                )}
               </p>
 
               <div className="max-w-[240px] mx-auto">

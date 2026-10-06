@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { supabaseClient } from '@/lib/supabase/client';
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { useRouter } from 'next/navigation';
 import { motion, type Variants } from "motion/react";
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete';
-import { saveRegistrationProfile } from '@/app/actions/donor.actions';
 import { getCurrentPosition } from '@/lib/geolocation';
 import { Droplet, Phone, MapPin, Heart, Check, Calendar } from 'lucide-react';
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -76,6 +77,16 @@ export default function LoginPage() {
   const [isAvailableDonor, setIsAvailableDonor] = useState(true);
 
   const router = useRouter();
+  const { signIn } = useAuthActions();
+  const updateProfile = useMutation(api.users.update);
+
+  const friendlyError = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/InvalidAccountId|InvalidSecret|Invalid password/i.test(msg)) return "Incorrect email or password.";
+    if (/already exists|AccountAlreadyExists/i.test(msg)) return "An account with this email already exists. Try signing in.";
+    if (/8 characters|password/i.test(msg)) return "Password must be at least 8 characters.";
+    return msg.length > 160 ? "Something went wrong. Please try again." : msg;
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,52 +116,31 @@ export default function LoginPage() {
           }
         }
 
-        const { data, error: signUpError } = await supabaseClient.auth.signUp({
-          email,
+        await signIn("password", {
+          flow: "signUp",
+          email: email.trim(),
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: {
-              full_name: fullName,
-            }
-          }
+          fullName: fullName.trim(),
         });
 
-        if (signUpError) throw signUpError;
-        if (!data.user) throw new Error("Sign up failed to return user data.");
-
-        const userId = data.user.id;
-        const locationPoint = lat && lng ? `POINT(${lng} ${lat})` : null;
-        
-        await saveRegistrationProfile(userId, {
-          full_name: fullName,
-          blood_group: bloodGroup,
-          phone: phone,
+        await updateProfile({
+          fullName: fullName.trim(),
+          bloodGroup: bloodGroup as (typeof bloodGroups)[number],
+          phone,
           city: location,
-          is_available_donor: isAvailableDonor,
-          latitude: lat,
-          longitude: lng,
-          location: locationPoint,
+          isAvailableDonor,
+          ...(lat && lng ? { lat, lng, location: `POINT(${lng} ${lat})` } : {}),
           age: parseInt(age),
+          profileCompleted: true,
         });
 
-        if (data.session) {
-          router.push('/dashboard');
-          router.refresh();
-        } else {
-          setSuccessMsg("Check your email for the confirmation link!");
-        }
-      } else {
-        const { error: signInError } = await supabaseClient.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) throw signInError;
         router.push('/dashboard');
-        router.refresh();
+      } else {
+        await signIn("password", { flow: "signIn", email: email.trim(), password });
+        router.push('/dashboard');
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(friendlyError(err));
     } finally {
       setLoading(false);
     }

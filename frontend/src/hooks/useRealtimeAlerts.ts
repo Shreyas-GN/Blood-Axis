@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useCallback } from 'react';
-import { subscribeToChannel, unsubscribeFromChannel } from '@/lib/supabase/realtime';
+import { useEffect, useRef, useCallback } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { useProfile } from "@/context/AuthContext";
 
 export function useRealtimeAlerts() {
     const { user } = useProfile();
-    const { profile } = useProfile();
+    const notifications = useQuery(api.notifications.list);
+    const seen = useRef<Set<string> | null>(null);
 
     const requestPermission = useCallback(async () => {
         if (!('Notification' in window)) return;
@@ -53,67 +55,22 @@ export function useRealtimeAlerts() {
         }
     }, [playAlertSound]);
 
+    // Notifications are live: anything unread that appears after the first load
+    // is new, so surface it as a browser notification (and sound if urgent).
     useEffect(() => {
-        if (!user?.id || !profile) return;
-
-        // 1. Subscribe to new requests that match donor's blood group
-        if (profile.is_available_donor && profile.blood_group) {
-            const channelId = `requests_${profile.blood_group.replace('+', 'pos').replace('-', 'neg')}`;
-            
-            subscribeToChannel(channelId, (channel) => {
-                channel.on(
-                    'postgres_changes',
-                    { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'blood_requests',
-                        filter: `blood_group=eq.${profile.blood_group}` 
-                    },
-                    (payload: any) => {
-                        const request = payload.new;
-                        // Skip if we are the requester
-                        if (request.requester_id === user.id) return;
-                        
-                        triggerNotification(
-                            'Emergency Blood Needed! 🩸',
-                            `${request.units} units of ${request.blood_group} needed at ${request.hospital_name}.`,
-                            request.urgency_level === 'IMMEDIATE'
-                        );
-                    }
-                );
-            });
+        if (!user?.id || notifications === undefined) return;
+        if (seen.current === null) {
+            seen.current = new Set(notifications.map((n) => n.id));
+            return;
         }
-
-        // 2. Subscribe to targeted notification logs
-        const logChannelId = `notifications_${user.id}`;
-        subscribeToChannel(logChannelId, (channel) => {
-            channel.on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'notification_logs',
-                    filter: `donor_id=eq.${user.id}`
-                },
-                (payload: any) => {
-                    const log = payload.new;
-                    const metadata = log.metadata || {};
-                    
-                    triggerNotification(
-                        metadata.title || 'Blood Axis Alert',
-                        metadata.body || 'New update regarding a blood request.',
-                        metadata.urgency === 'HIGH' || metadata.isImmediate === true
-                    );
-                }
-            );
-        });
-
-        return () => {
-            if (profile.blood_group) {
-                const channelId = `requests_${profile.blood_group.replace('+', 'pos').replace('-', 'neg')}`;
-                unsubscribeFromChannel(channelId);
+        for (const n of notifications) {
+            if (seen.current.has(n.id)) continue;
+            seen.current.add(n.id);
+            if (n.status === 'unread') {
+                triggerNotification(n.title, n.message, n.type === 'emergency_request');
             }
-            unsubscribeFromChannel(`notifications_${user.id}`);
-        };
-    }, [user?.id, profile, triggerNotification]);
+        }
+    }, [user?.id, notifications, triggerNotification]);
+
+    return { requestPermission };
 }

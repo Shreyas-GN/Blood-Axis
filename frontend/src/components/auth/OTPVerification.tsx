@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, RefreshCw, Phone } from "lucide-react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { toE164 } from "@/lib/phone";
 
 interface OTPVerificationProps {
     phone: string;
@@ -19,6 +21,8 @@ export function OTPVerification({ phone, onVerified, onBack }: OTPVerificationPr
     const [countdown, setCountdown] = useState(60);
     const [canResend, setCanResend] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const { signIn } = useAuthActions();
+    const e164 = toE164(phone);
 
     useEffect(() => { sendOTP(); }, []);
 
@@ -35,12 +39,7 @@ export function OTPVerification({ phone, onVerified, onBack }: OTPVerificationPr
         setSending(true);
         setError(null);
         try {
-            const res = await fetch('/api/auth/otp/send', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            await signIn('phone', { phone: e164 });
         } catch (e: any) {
             setError(e.message || 'Failed to send OTP');
         } finally {
@@ -85,16 +84,11 @@ export function OTPVerification({ phone, onVerified, onBack }: OTPVerificationPr
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/auth/otp/verify', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, otp: code })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            await signIn('phone', { phone: e164, code });
             setSuccess(true);
             setTimeout(onVerified, 1000);
         } catch (e: any) {
-            setError(e.message || 'Verification failed');
+            setError('That code is incorrect or has expired.');
             setOtp(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
         } finally {
@@ -114,7 +108,7 @@ export function OTPVerification({ phone, onVerified, onBack }: OTPVerificationPr
                 </div>
                 <h2 className="text-xl font-extrabold text-[var(--color-base-900)]">Verify your number</h2>
                 <p className="text-sm text-[var(--color-base-500)]">
-                    We sent a 6-digit code via Telegram to<br />
+                    We sent a 6-digit code by SMS to<br />
                     <span className="font-bold text-[var(--color-base-900)]">{phone}</span>
                 </p>
             </div>

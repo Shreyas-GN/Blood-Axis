@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useProfile } from "@/context/AuthContext";
-import { updateProfileAction } from "@/app/actions/donor.actions";
-import { logActivityAction } from "@/app/actions/activity.actions";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import type { User } from "@/types";
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
 
 export function AvailabilityCard({ profile, onToggle }: Props) {
     const { user, profile: authProfile, isLoading: isLoaded } = useProfile();
+    const updateProfile = useMutation(api.users.update);
+    const logActivity = useMutation(api.activities.log);
     const [isAvailable, setIsAvailable] = useState(profile?.is_available_donor ?? false);
     const [loading, setLoading] = useState(false);
 
@@ -21,11 +23,11 @@ export function AvailabilityCard({ profile, onToggle }: Props) {
         setLoading(true);
         const next = !isAvailable;
         try {
-            await updateProfileAction({ is_available_donor: next });
-            await logActivityAction(
-                "availability_changed",
-                next ? "You turned on donor availability." : "You turned off donor availability."
-            );
+            await updateProfile({ isAvailableDonor: next });
+            await logActivity({
+                eventType: "availability_changed",
+                description: next ? "You turned on donor availability." : "You turned off donor availability.",
+            });
             setIsAvailable(next);
             onToggle();
         } catch {

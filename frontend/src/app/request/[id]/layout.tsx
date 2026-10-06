@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import { getRequestByIdAction } from '@/app/actions/request.actions';
+import { fetchQuery } from 'convex/nextjs';
+import { api } from '../../../../convex/_generated/api';
 
 interface Props {
   params: { id: string };
@@ -9,12 +10,12 @@ interface Props {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   try {
     const { id } = await params;
-    const request = await getRequestByIdAction(id);
+    const request = await fetchQuery(api.requests.getPublicMeta, { id });
     
     if (!request) return { title: 'Request Not Found' };
 
     const title = `Urgent ${request.blood_group} Blood Required at ${request.hospital_name}`;
-    const description = `Immediate help needed for ${request.patient_name || 'a patient'}. ${request.units} units of ${request.blood_group} required. Location: ${request.hospital_name}, ${request.city}.`;
+    const description = `Immediate help needed. ${request.units} unit${request.units > 1 ? 's' : ''} of ${request.blood_group} required at ${request.hospital_name}${request.city ? `, ${request.city}` : ''}.`;
 
     return {
       title,
@@ -23,7 +24,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         title,
         description,
         type: 'article',
-        publishedTime: request.created_at,
         authors: ['Blood Axis'],
       },
       twitter: {

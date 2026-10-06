@@ -73,11 +73,33 @@ RULES:
 
 Strict JSON only.`;
 
+// Public endpoint (the emergency page parses before sign-in), so cap its cost:
+// best-effort per-IP limit (per server instance) and a bounded input size.
+const WINDOW_MS = 60_000;
+const MAX_CALLS = 10;
+const hits = new Map<string, number[]>();
+
+function rateLimited(ip: string) {
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) hits.clear();
+  return recent.length > MAX_CALLS;
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (rateLimited(ip)) {
+      return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
+    }
     const body = await request.json();
     const { text } = body;
 
+    if (typeof text !== "string" || text.length > 1000) {
+      return NextResponse.json({ error: "Please keep your description under 1000 characters." }, { status: 400 });
+    }
     if (!text || text.trim().length < 5) {
       return NextResponse.json({ error: "Please describe your blood requirement in more detail." }, { status: 400 });
     }
@@ -113,10 +135,7 @@ export async function POST(request: NextRequest) {
 
   } catch (err: any) {
     console.error("[Groq Error]", err);
-    return NextResponse.json({
-      error: "AI service failed. Please check your GROQ_API_KEY.",
-      details: err.message
-    }, { status: 500 });
+    return NextResponse.json({ error: "AI service failed. Please try again or fill the form manually." }, { status: 500 });
   }
 }
 

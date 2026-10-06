@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Heart, Activity } from "lucide-react";
-import { supabaseClient } from "@/lib/supabase/client";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { formatDistanceToNow } from "date-fns";
 import type { ActivityEventType } from "@/types/database.types";
 
@@ -62,28 +63,9 @@ interface Props {
 }
 
 export function ActivityTimeline({ userId, limit = 20, compact = false }: Props) {
-    const [activities, setActivities] = useState<ActivityRow[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetch() {
-            setLoading(true);
-            try {
-                let query = (supabaseClient as any)
-                    .from("activities")
-                    .select("*")
-                    .order("created_at", { ascending: false })
-                    .limit(limit);
-
-                if (userId) query = query.eq("user_id", userId);
-
-                const { data, error } = await query;
-                if (!error && data) setActivities(data as ActivityRow[]);
-            } catch { /* silently fail */ }
-            finally { setLoading(false); }
-        }
-        fetch();
-    }, [userId, limit]);
+    const data = useQuery(api.activities.recent, { limit });
+    const activities = (data ?? []) as unknown as ActivityRow[];
+    const loading = data === undefined;
 
     if (loading) {
         return (

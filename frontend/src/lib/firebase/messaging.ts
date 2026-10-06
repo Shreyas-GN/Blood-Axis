@@ -1,12 +1,11 @@
 import { getToken } from "firebase/messaging";
 import { messaging } from "./config";
-import { DonorService } from "@/services/donor.service";
 
 /**
  * Registers the current device for push notifications.
- * Saves the FCM token to the user's Supabase profile.
+ * Hands the FCM token to `saveToken` (the Convex `users.registerFcmToken` mutation).
  */
-export async function registerForPushNotifications(userId: string) {
+export async function registerForPushNotifications(saveToken: (token: string) => Promise<unknown>) {
     try {
         const msg = await messaging();
         if (!msg) {
@@ -28,12 +27,8 @@ export async function registerForPushNotifications(userId: string) {
         });
 
         if (token) {
-            console.log("[FCM] Token acquired:", token);
             
-            // Save to Supabase
-            await DonorService.updateProfile(userId, {
-                fcm_token: token
-            } as any);
+            await saveToken(token);
 
             return token;
         }

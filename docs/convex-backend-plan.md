@@ -1,5 +1,7 @@
 # Backend analysis and migration plan: Supabase → Convex (database and auth)
 
+> **Status: implemented** (see section 7). Sections 1–6 are the original analysis and plan; section 7 records what was built and where it differs.
+
 ## 1. What the backend is today
 
 There are three pieces, and they overlap:
@@ -148,3 +150,31 @@ Remove `matching-engine/`, `database/`, `@supabase/*`, `svix`, the Clerk stubs a
 - Convex Auth is beta and its API has shifted between releases; pin the version and check the current docs when implementing. The `JWT_PRIVATE_KEY`/`JWKS`/`SITE_URL` env vars must be set per deployment (dev and prod), or sign-in fails silently.
 - Convex has no built-in SMS or email delivery; OTP and password-reset delivery are your code and your provider's cost.
 - Next 16 prefers `proxy.ts` over `middleware.ts`; the current `middleware.ts` still works but check the Convex Auth docs for the preferred file name.
+
+## 7. Implementation status
+
+Built in `frontend/convex/` and wired into the app. Verified by `npm run type-check`, `npm run build` and 12 `convex-test` tests (`npm test`) covering auth, eligibility, escalation, response counting and privacy rules. **Not verified against a live Convex deployment** — see "Before first deploy".
+
+**Differences from the plan**
+- **Geo search:** plain haversine over the indexed `(isAvailableDonor, bloodGroup)` set, no Geospatial component and no geohash. Fine at this scale; revisit past a few thousand donors.
+- **Compatibility:** alerts go to ABO/Rh-compatible donors, exact matches first (`lib/compat.ts`, shared with the dashboard filter).
+- **Auth providers:** Password (email) and Phone OTP. The Anonymous provider was dropped: the wizard now verifies a phone number instead of creating guest accounts.
+- **Escalation:** one internal mutation per phase (5/15/25 km, 5 min apart, expiry at 2 h). It re-checks status on every run, so fulfilling or cancelling stops it without stored job ids. Network I/O is in actions (`delivery.ts`).
+- **SMS:** Twilio via `fetch`; without credentials the message is logged and the log row is marked `FAILED` / `sms_not_configured`.
+- **Push:** FCM HTTP v1 with service-account auth; invalid tokens are pruned. Multiple tokens per user.
+- **Telegram:** kept; the broadcast no longer includes the patient name or contact number.
+- **Privacy:** contact phone is shown only to the requester and donors who accepted; responder lists are visible only to the requester; the nearby-donor map is owner-only, without phone numbers and with coordinates rounded to ~1 km.
+- **AI parsing:** stays a Next.js route (the emergency page uses it before sign-in), now with a per-IP rate limit, input cap and no error details.
+- **Frontend:** snake_case row shapes are preserved by mappers in `convex/lib/helpers.ts`, so most components were unchanged. Server actions, `services/`, Supabase clients, OTP and alert routes, `matching-engine/` and `database/` were deleted.
+
+**Before first deploy**
+1. `npx convex dev` (creates the deployment and regenerates `convex/_generated`; the committed copy was produced from the CLI templates because no deployment was reachable).
+2. `npx @convex-dev/auth` (JWT keys, `SITE_URL`).
+3. `npx convex env set APP_URL …` plus the optional `TWILIO_*`, `FIREBASE_*`, `TELEGRAM_*`.
+4. Netlify: add `CONVEX_DEPLOY_KEY` (build runs `npx convex deploy`) and `NEXT_PUBLIC_CONVEX_URL`.
+
+**Known gaps**
+- No role or admin tooling: `isVerified` and `role` exist in the schema but nothing sets them, so hospital verification is still cosmetic (decision 5 above is open).
+- `bloodBanks` has no UI or seed; insert rows from the Convex dashboard.
+- The Google/GitHub buttons on the login page were placeholders before and still are.
+- Requests created without a hospital from the list rely on browser location; denied location blocks submission with a message.

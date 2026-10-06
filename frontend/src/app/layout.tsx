@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Space_Grotesk, Space_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
+import { ConvexClientProvider } from '@/components/ConvexClientProvider';
 import { AuthProvider } from '@/context/AuthContext';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL, THEME_COLOR } from '@/lib/site';
 
@@ -78,9 +80,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ConvexAuthNextjsServerProvider>
+          <ConvexClientProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </ConvexClientProvider>
+        </ConvexAuthNextjsServerProvider>
       </body>
     </html>
   );

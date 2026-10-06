@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { 
   Plus, Droplet, MapPin, Clock, ShieldCheck, Activity, 
   Settings, Users, BarChart3, HelpCircle, Heart, Search, CheckCircle
 } from 'lucide-react';
-import { RequestService } from "@/services/request.service";
-import { DonorService } from "@/services/donor.service";
-import { supabaseClient } from "@/lib/supabase/client";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { toRequestArgs } from "@/lib/convex-adapters";
 import Map from '@/components/map/Map';
 import type { BloodRequest } from "@/types";
 
@@ -16,11 +16,12 @@ type SidebarTab = 'dashboard' | 'tracking' | 'analytics' | 'records' | 'settings
 
 export default function HospitalDashboard() {
   const [activeTab, setActiveTab] = useState<SidebarTab>('dashboard');
-  const [requests, setRequests] = useState<BloodRequest[]>([]);
-  const [pulseLogs, setPulseLogs] = useState<any[]>([]);
-  const [mapMarkers, setMapMarkers] = useState<any[]>([]);
+  const requestsData = useQuery(api.requests.listActive);
+  const createRequest = useMutation(api.requests.create);
+  const requests = (requestsData ?? []) as unknown as BloodRequest[];
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const loading = requestsData === undefined;
   
   // Create Request Form State
   const [form, setForm] = useState({
@@ -36,61 +37,32 @@ export default function HospitalDashboard() {
     note: ''
   });
 
-  const fetchData = useCallback(async () => {
-    try {
-      const activeRequests = await RequestService.getActiveRequests();
-      setRequests(activeRequests as any);
-
-      // Create map markers for hospitals
-      const markers = activeRequests.map((r: any) => {
-        const coords = r.location?.match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
-        const lng = coords ? parseFloat(coords[1]) : 77.5946;
-        const lat = coords ? parseFloat(coords[2]) : 12.9716;
-        
-        return {
-          id: r.id.toString(),
-          lat,
-          lng,
-          label: `${r.blood_group} Needed: ${r.hospital_name}`,
-          type: 'hospital'
-        };
-      });
-      setMapMarkers(markers);
-
-      // Populate mock pulse timeline actions based on request states
-      const mockPulse = activeRequests.slice(0, 5).map((r: any, idx: number) => ({
+  // Map markers and the activity pulse are derived from the live request list.
+  const mapMarkers = useMemo(
+    () =>
+      requests.map((r: any) => ({
+        id: r.id.toString(),
+        lat: r.latitude ?? 12.9716,
+        lng: r.longitude ?? 77.5946,
+        label: `${r.blood_group} Needed: ${r.hospital_name}`,
+        type: 'hospital' as const,
+      })),
+    [requests],
+  );
+  const pulseLogs = useMemo(
+    () =>
+      requests.slice(0, 5).map((r: any, idx: number) => ({
         id: idx,
         message: `${r.blood_group} request created for ${r.patient_name || 'Emergency'} at ${r.hospital_name}`,
         time: new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        type: r.status === 'donor_accepted' ? 'success' : 'info'
-      }));
-      setPulseLogs(mockPulse);
-
-    } catch (e) {
-      console.error("Failed to fetch hospital dashboard data", e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-
-    // Subscribe to realtime updates for requests
-    const channel = supabaseClient.channel('hospital_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'blood_requests' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    return () => {
-      supabaseClient.removeChannel(channel);
-    };
-  }, [fetchData]);
+        type: r.status === 'donor_accepted' ? 'success' : 'info',
+      })),
+    [requests],
+  );
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     try {
       // Mock latitude/longitude offset around Bangalore center for simulation
       const randOffsetLat = (Math.random() - 0.5) * 0.05;
@@ -98,16 +70,12 @@ export default function HospitalDashboard() {
       const lat = 12.9716 + randOffsetLat;
       const lng = 77.5946 + randOffsetLng;
 
-      await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          status: 'searching',
-          latitude: lat,
-          longitude: lng,
-          location: `POINT(${lng} ${lat})`
-        })
+      const args = toRequestArgs({ ...form }) as Record<string, any>;
+      await createRequest({
+        ...(args as any),
+        lat,
+        lng,
+        location: `POINT(${lng} ${lat})`,
       });
 
       setShowCreateModal(false);
@@ -123,15 +91,14 @@ export default function HospitalDashboard() {
         requester_relation: 'Doctor',
         note: ''
       });
-      await fetchData();
     } catch (error) {
       console.error("Intake creation failed", error);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (loading && requests.length === 0) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
         <div className="w-12 h-12 relative flex items-center justify-center">

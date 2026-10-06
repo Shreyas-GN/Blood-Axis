@@ -2,18 +2,17 @@
 "use client";
 
 import { useProfile } from "@/context/AuthContext";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getProfileAction, getResponsesForDonorAction, submitDonorResponseAction } from "@/app/actions/donor.actions";
-import { getActiveRequestsAction } from "@/app/actions/request.actions";
-import { getRecentActivitiesAction, logActivityAction } from "@/app/actions/activity.actions";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { CAN_RECEIVE_FROM } from "../../../convex/lib/compat";
 
 import {
     Droplet, Settings, AlertTriangle, Heart, CheckCircle2, Activity, UserCircle
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertService } from "@/services/alert.service";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { RequestDetailDrawer } from "@/components/request/RequestDetailDrawer";
 import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
@@ -22,7 +21,6 @@ import { AvailabilityCard } from "@/components/dashboard/AvailabilityCard";
 import { ImpactCard } from "@/components/dashboard/ImpactCard";
 import { FilterPills, type FilterOption } from "@/components/dashboard/FilterPills";
 import type { BloodRequest, User } from "@/types";
-import { supabaseClient } from "@/lib/supabase/client";
 import { useRealtimeAlerts } from "@/hooks/useRealtimeAlerts";
 import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
 import { BottomNav } from "@/components/nav/BottomNav";
@@ -43,71 +41,32 @@ export default function DashboardPage() {
     const router = useRouter();
     useRealtimeAlerts();
 
-    const [profile, setProfile] = useState<User | null>(null);
-    const [allRequests, setAllRequests] = useState<BloodRequest[]>([]);
-    const [loading, setLoading] = useState(true);
+    const profile = authProfile as User | null;
+    const requestsData = useQuery(api.requests.listActive);
+    const myResponses = useQuery(api.responses.listMine);
+    const respond = useMutation(api.responses.respond);
+
+    const allRequests = (requestsData ?? []) as unknown as BloodRequest[];
+    const acceptedIds = useMemo(
+        () => new Set<number | string>((myResponses ?? []).filter((r) => r.status !== "CANCELLED").map((r) => r.request_id)),
+        [myResponses],
+    );
+    const loading = requestsData === undefined || myResponses === undefined;
     const [acceptingId, setAcceptingId] = useState<number | string | null>(null);
-    const [acceptedIds, setAcceptedIds] = useState<Set<number | string>>(new Set());
     const [selectedRequestId, setSelectedRequestId] = useState<string | number | null>(null);
     const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
     const [boardError, setBoardError] = useState<string | null>(null);
 
-    const fetchData = useCallback(async () => {
-        if (!user?.id) return;
-        try {
-            const [profileData, requestsData] = await Promise.all([
-                getProfileAction().catch(() => null),
-                getActiveRequestsAction().catch(() => []),
-            ]);
-            setProfile(profileData as any);
-            setAllRequests(requestsData as any);
-
-            if (profileData) {
-                try {
-                    const data = await getResponsesForDonorAction();
-                    setAcceptedIds(new Set(data.filter((r: any) => r.status !== 'CANCELLED').map((r: any) => r.request_id)));
-                } catch { /* ignore */ }
-            }
-        } catch { /* silent */ }
-        finally { setLoading(false); }
-    }, [user?.id]);
-
     useEffect(() => {
-        if (authLoading) return;
-        if (!user) { router.push("/login"); return; }
-        fetchData();
-
-        const channel = supabaseClient
-            .channel("dashboard_changes")
-            .on("postgres_changes", { event: "*", schema: "public", table: "blood_requests" }, () => fetchData())
-            .on("postgres_changes", { event: "*", schema: "public", table: "donor_responses" }, () => fetchData())
-            .subscribe();
-
-        return () => { supabaseClient.removeChannel(channel); };
-    }, [authLoading, user, fetchData, router]);
+        if (!authLoading && !user) router.push("/login");
+    }, [authLoading, user, router]);
 
     const handleAccept = async (requestId: any) => {
         setAcceptingId(requestId);
         setBoardError(null);
         try {
-            await submitDonorResponseAction(requestId.toString(), 'ACCEPTED');
-
-            const req = allRequests.find((r: any) => r.id === requestId);
-            if (req?.contact_phone) {
-                await AlertService.sendSMS(
-                    req.contact_phone,
-                    `Blood Axis ALERT: ${profile?.full_name || "A donor"} has offered to donate blood for ${req.patient_name || "your request"}. Check your dashboard for details.`
-                );
-            }
-
-            await logActivityAction(
-                "donor_accepted",
-                `You offered to donate blood for ${req?.patient_name || "a patient"} at ${req?.hospital_name || "the hospital"}.`,
-                requestId.toString()
-            );
-
-            setAcceptedIds((prev) => new Set(prev).add(requestId));
-            await fetchData();
+            // The server notifies the requester by SMS and in-app, and logs the donor's activity.
+            await respond({ requestId, status: "ACCEPTED" });
         } catch (err: any) {
             setBoardError(err.message || "We encountered an issue. Please try again.");
         } finally {
@@ -128,7 +87,7 @@ export default function DashboardPage() {
     const donateRequests = profile?.is_available_donor ? allRequests.filter(
         (r) =>
             r.requester_id !== (profile?.id ?? -1) &&
-            (r.blood_group === profile?.blood_group || r.requester_id === null) &&
+            (!!profile?.blood_group && (CAN_RECEIVE_FROM as Record<string, string[]>)[r.blood_group]?.includes(profile.blood_group)) &&
             (r.status === "searching" || r.status === "donor_accepted" || acceptedIds.has(r.id))
     ) : [];
 
@@ -216,7 +175,7 @@ export default function DashboardPage() {
                     
                     {/* Bento Span 2x1: Availability */}
                     <div className="md:col-span-2 card-base flex items-center p-6 border border-[var(--color-border)] rounded-[var(--radius-card)]">
-                        <AvailabilityCard profile={profile} onToggle={fetchData} />
+                        <AvailabilityCard profile={profile} onToggle={() => {}} />
                     </div>
 
                     {/* Bento Span 1x1: Impact 1 */}
@@ -271,7 +230,7 @@ export default function DashboardPage() {
             <RequestDetailDrawer
                 requestId={selectedRequestId}
                 onClose={() => setSelectedRequestId(null)}
-                onActionComplete={() => { fetchData(); setSelectedRequestId(null); }}
+                onActionComplete={() => setSelectedRequestId(null)}
             />
             <NotificationPrompt />
             <BottomNav />

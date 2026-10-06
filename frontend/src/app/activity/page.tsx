@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Droplet, ArrowLeft } from "lucide-react";
-import { DonorService } from "@/services/donor.service";
 import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { EmptyStateActivity } from "@/components/ui/EmptyState";

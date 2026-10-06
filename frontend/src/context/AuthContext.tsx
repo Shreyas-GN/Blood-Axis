@@ -1,13 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
-import { getProfileAction, updateProfileAction } from "@/app/actions/donor.actions";
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { api } from "../../convex/_generated/api";
+import { toProfileArgs } from "@/lib/convex-adapters";
 import type { User } from "@/types";
-import type { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 interface AuthContextValue {
-    user: SupabaseUser | null;
+    user: { id: string; email: string | null; user_metadata: { full_name?: string; avatar_url?: string } } | null;
     profile: User | null;
     isLoading: boolean;
     refetch: () => Promise<void>;
@@ -18,75 +19,34 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<SupabaseUser | null>(null);
-    const [profile, setProfile] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const { isLoading: sessionLoading, isAuthenticated } = useConvexAuth();
+    const { signOut } = useAuthActions();
+    const me = useQuery(api.users.me);
+    const update = useMutation(api.users.update);
 
-    const fetchProfile = async (currentUser?: SupabaseUser | null) => {
-        const u = currentUser !== undefined ? currentUser : user;
-        if (!u?.id) {
-            setProfile(null);
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const data = await getProfileAction();
-            setProfile(data as any);
-        } catch (error) {
-            console.error("Failed to fetch profile", error);
-            setProfile(null);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const updateProfile = async (data: Partial<User>) => {
-        if (!user?.id) return;
-        try {
-            await updateProfileAction(data as any);
-            await fetchProfile(user);
-        } catch (error) {
-            console.error("Failed to update profile", error);
-            throw error;
-        }
-    };
-
-    useEffect(() => {
-        // Initial fetch
-        const initializeAuth = async () => {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-            await fetchProfile(currentUser);
-        };
-        
-        initializeAuth();
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
-            async (_event: AuthChangeEvent, session: Session | null) => {
-                const currentUser = session?.user ?? null;
-                setUser(currentUser);
-                await fetchProfile(currentUser);
-            }
-        );
-
-        return () => subscription.unsubscribe();
-    }, []);
-
-    return (
-        <AuthContext.Provider value={{ 
-            user,
-            profile, 
-            isLoading, 
-            refetch: () => fetchProfile(user),
-            updateProfile,
-            signOut: async () => { await supabaseClient.auth.signOut(); }
-        }}>
-            {children}
-        </AuthContext.Provider>
+    const updateProfile = useCallback(
+        async (data: Partial<User>) => {
+            await update(toProfileArgs(data as Record<string, any>));
+        },
+        [update],
     );
+
+    const value = useMemo<AuthContextValue>(() => {
+        const profile = (isAuthenticated ? me : null) as User | null | undefined;
+        return {
+            user: profile
+                ? { id: profile.id, email: profile.email ?? null, user_metadata: { full_name: profile.full_name } }
+                : null,
+            profile: profile ?? null,
+            isLoading: sessionLoading || (isAuthenticated && me === undefined),
+            // Convex queries are live, so there is nothing to refetch.
+            refetch: async () => {},
+            updateProfile,
+            signOut: async () => { await signOut(); },
+        };
+    }, [sessionLoading, isAuthenticated, me, updateProfile, signOut]);
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useProfile(): AuthContextValue {

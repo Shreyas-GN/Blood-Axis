@@ -13,6 +13,9 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Mic, ArrowRight, AlertTriangle, CheckCircle, Droplet, X } from "lucide-react";
 import { OTPVerification } from "@/components/auth/OTPVerification";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { toE164 } from "@/lib/phone";
 
 type Step = "input" | "otp" | "submitting" | "done";
 
@@ -34,6 +37,8 @@ const labelClass = "block text-[11px] font-metric text-[var(--color-text-seconda
 
 export default function EmergencyPage() {
     const router = useRouter();
+    const createRequest = useMutation(api.requests.create);
+    const updateMyProfile = useMutation(api.users.update);
     const [step, setStep] = useState<Step>("input");
     const [text, setText] = useState("");
     const [phone, setPhone] = useState("");
@@ -109,31 +114,25 @@ export default function EmergencyPage() {
         if (!parsed) return;
         setStep("submitting");
         try {
-            const res = await fetch("/api/requests", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    blood_group: parsed.blood_group || "O+",
-                    units: parsed.units,
-                    patient_name: isAnonymous
-                        ? "Anonymous Patient"
-                        : parsed.patient_name || requesterName || "Emergency Patient",
-                    hospital_name: parsed.hospital_name || "Unknown Hospital",
-                    city: isManualLocation ? manualCity : parsed.hospital_name || "Bangalore",
-                    contact_phone: phone,
-                    urgency_level: parsed.urgency_level,
-                    requester_relation: parsed.relation || null,
-                    status: "searching",
-                    latitude: location?.lat || 12.9716,
-                    longitude: location?.lng || 77.5946,
-                    location: location
-                        ? `POINT(${location.lng} ${location.lat})`
-                        : `POINT(77.5946 12.9716)`,
-                }),
+            const lat = location?.lat ?? 12.9716;
+            const lng = location?.lng ?? 77.5946;
+            await updateMyProfile({ phone: toE164(phone), fullName: requesterName || undefined }).catch(() => {});
+            const created = await createRequest({
+                bloodGroup: (parsed.blood_group || "O+") as any,
+                units: parsed.units || 1,
+                patientName: isAnonymous
+                    ? "Anonymous Patient"
+                    : parsed.patient_name || requesterName || "Emergency Patient",
+                hospitalName: parsed.hospital_name || "Unknown Hospital",
+                city: isManualLocation ? manualCity : parsed.hospital_name || "Bangalore",
+                contactPhone: toE164(phone),
+                urgencyLevel: parsed.urgency_level,
+                requesterRelation: parsed.relation || undefined,
+                lat,
+                lng,
+                location: `POINT(${lng} ${lat})`,
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Submission failed");
-            setCreatedRequestId(data.request?.id);
+            setCreatedRequestId(created.id);
             setStep("done");
         } catch (e: any) {
             setParseError(e.message);

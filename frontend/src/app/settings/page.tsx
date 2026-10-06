@@ -8,7 +8,6 @@ import { ArrowLeft, ChevronRight, Droplet, Edit2, Power } from "lucide-react";
 import { Switch } from "@/components/ui/Switch";
 import { Slider } from "@/components/ui/Slider";
 import { BottomNav } from "@/components/nav/BottomNav";
-import { getProfileAction, updateProfileAction } from "@/app/actions/donor.actions";
 
 interface UserSettings {
     auto_disable_on_accept: boolean;
@@ -97,7 +96,7 @@ function Row({
 }
 
 export default function SettingsPage() {
-    const { user, profile: authProfile, isLoading: isLoaded, signOut } = useProfile();
+    const { user, profile: authProfile, isLoading: isLoaded, signOut, updateProfile } = useProfile();
     const router = useRouter();
 
     const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -112,7 +111,7 @@ export default function SettingsPage() {
         const fetchData = async () => {
             try {
                 if (!user) return;
-                const profileData = await getProfileAction().catch(() => null);
+                const profileData = authProfile;
 
                 setSettings({
                     auto_disable_on_accept: true,
@@ -137,14 +136,14 @@ export default function SettingsPage() {
                             user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
                             "",
                         blood_group: profileData.blood_group ?? "",
-                        city: profileData.location || "",
+                        city: profileData.city || "",
                         phone_number: profileData.phone || "",
                         is_available_donor: profileData.is_available_donor,
-                        date_joined: profileData.created_at,
+                        date_joined: profileData.created_at ?? new Date().toISOString(),
                         last_donation_date: null,
                     });
                     setProfileFormData({
-                        city: profileData.location || "",
+                        city: profileData.city || "",
                         blood_group: profileData.blood_group || "",
                     });
                 }
@@ -162,7 +161,7 @@ export default function SettingsPage() {
                 router.push("/");
             }
         }
-    }, [isLoaded, user, router]);
+    }, [isLoaded, user, authProfile, router]);
 
     const updateSetting = async (key: keyof UserSettings, value: any) => {
         if (!settings) return;
@@ -194,7 +193,7 @@ export default function SettingsPage() {
                   }
         );
         try {
-            await updateProfileAction({ is_available_donor: checked });
+            await updateProfile({ is_available_donor: checked });
         } catch {
             setProfile((p) => (p ? { ...p, is_available_donor: prev } : null));
         }
@@ -205,8 +204,8 @@ export default function SettingsPage() {
         setSavingProfile(true);
         setProfileError(null);
         try {
-            await updateProfileAction({
-                location: profileFormData.city,
+            await updateProfile({
+                city: profileFormData.city,
                 blood_group: profileFormData.blood_group as any,
             });
             setProfile((p) =>

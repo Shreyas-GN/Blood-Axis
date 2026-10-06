@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,10 +8,9 @@ import {
     X, MapPin, Droplet, Clock, Phone, User, Heart, CheckCircle,
     AlertCircle, Share2, Shield, Loader2, MessageCircle
 } from "lucide-react";
-import { getProfileAction, getResponsesForRequestAction, submitDonorResponseAction, cancelResponseAction } from "@/app/actions/donor.actions";
-import { getRequestByIdAction, updateRequestAction } from "@/app/actions/request.actions";
-import { logActivityAction } from "@/app/actions/activity.actions";
-import { AlertService } from "@/services/alert.service";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import type { BloodRequest, DonorResponse } from "@/types";
 import Map from "@/components/map/Map";
 import { formatDistance, estimateETA, calculateDistance } from "@/lib/geolocation";
@@ -36,73 +35,28 @@ interface Props {
 }
 
 export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Props) {
-    const { user, isLoading: isLoaded } = useProfile();
+    const { profile: currentUserProfile } = useProfile();
     const router = useRouter();
 
-    const [request, setRequest] = useState<any | null>(null);
-    const [acceptedDonors, setAcceptedDonors] = useState<DonorResponse[]>([]);
-    const [currentUserProfile, setCurrentUserProfile] = useState<any | null>(null);
-    const [loading, setLoading] = useState(false);
+    const request = useQuery(api.requests.get, requestId ? { id: requestId.toString() } : "skip") as any | null | undefined;
+    const responses = useQuery(
+        api.responses.listForRequest,
+        request ? { requestId: request.id as Id<"bloodRequests"> } : "skip",
+    );
+    const acceptedDonors = useMemo(() => (responses ?? []) as unknown as DonorResponse[], [responses]);
+    const respond = useMutation(api.responses.respond);
+    const withdraw = useMutation(api.responses.cancel);
+    const fulfill = useMutation(api.requests.fulfill);
+    const cancel = useMutation(api.requests.cancel);
+
+    const loading = !!requestId && request === undefined;
     const [accepting, setAccepting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [actionError, setError] = useState<string | null>(null);
+    const error = actionError ?? (requestId && request === null ? "Could not load request details." : null);
     const [showMap, setShowMap] = useState(false);
     const [confirmingCancel, setConfirmingCancel] = useState(false);
 
-    const fetchRequest = useCallback(async () => {
-        if (!requestId) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await getRequestByIdAction(requestId.toString());
-            setRequest(data);
-            try {
-                const responses = await getResponsesForRequestAction(requestId.toString());
-                setAcceptedDonors(responses);
-            } catch { }
-        } catch {
-            setError("Could not load request details.");
-        } finally {
-            setLoading(false);
-        }
-    }, [requestId]);
-
-    useEffect(() => {
-        if (isLoaded && user?.id) {
-            getProfileAction().then(setCurrentUserProfile).catch(() => { });
-        }
-    }, [user?.id, isLoaded]);
-
-    useEffect(() => {
-        if (requestId) {
-            fetchRequest();
-        } else {
-            setRequest(null);
-            setAcceptedDonors([]);
-            setError(null);
-        }
-    }, [requestId, fetchRequest]);
-
-    useEffect(() => {
-        if (!requestId) return;
-        let channel: any;
-        const setup = async () => {
-            const { supabaseClient } = await import("@/lib/supabase/client");
-            channel = supabaseClient
-                .channel(`drawer_${requestId}_responses`)
-                .on("postgres_changes", {
-                    event: "*", schema: "public", table: "donor_responses",
-                    filter: `request_id=eq.${requestId}`
-                }, async () => {
-                    try {
-                        const responses = await getResponsesForRequestAction(requestId.toString());
-                        setAcceptedDonors(responses);
-                    } catch { }
-                })
-                .subscribe();
-        };
-        setup();
-        return () => { if (channel) channel.unsubscribe(); };
-    }, [requestId]);
+    useEffect(() => { if (!requestId) setError(null); }, [requestId]);
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -128,19 +82,12 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                 }
             }
 
-            await submitDonorResponseAction(requestId!.toString(), 'ACCEPTED', distance, eta);
-            if (request?.contact_phone) {
-                await AlertService.sendSMS(
-                    request.contact_phone,
-                    `Blood Axis ALERT: ${currentUserProfile.full_name || "A donor"} has offered to donate blood for ${request.patient_name}. They may contact you shortly.`
-                );
-            }
-            await logActivityAction(
-                'donor_accepted',
-                `You offered to donate blood for ${request?.patient_name || 'a patient'} at ${request?.hospital_name || 'the hospital'}.`,
-                requestId!.toString()
-            );
-            await fetchRequest();
+            await respond({
+                requestId: requestId as Id<"bloodRequests">,
+                status: "ACCEPTED",
+                distanceMeters: distance ?? undefined,
+                etaMinutes: eta ?? undefined,
+            });
             onActionComplete?.();
         } catch (err: any) {
             setError(err.message || "We couldn't process this right now. Please try again.");
@@ -151,14 +98,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
 
     const handleComplete = async () => {
         try {
-            await updateRequestAction(requestId!.toString(), { status: "fulfilled" });
-            if (currentUserProfile?.id) {
-                await logActivityAction(
-                    'request_fulfilled',
-                    `Request for ${request?.patient_name || 'a patient'} at ${request?.hospital_name || 'the hospital'} was marked as fulfilled.`,
-                    requestId!.toString()
-                );
-            }
+            await fulfill({ id: requestId as Id<"bloodRequests"> });
             onClose();
             onActionComplete?.();
         } catch { setError("Could not mark as fulfilled. Please try again."); }
@@ -167,14 +107,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
     const handleCancel = async () => {
         setConfirmingCancel(false);
         try {
-            await updateRequestAction(requestId!.toString(), { status: "cancelled" });
-            if (currentUserProfile?.id) {
-                await logActivityAction(
-                    'request_cancelled',
-                    `Request for ${request?.patient_name || 'a patient'} at ${request?.hospital_name || 'the hospital'} was cancelled.`,
-                    requestId!.toString()
-                );
-            }
+            await cancel({ id: requestId as Id<"bloodRequests"> });
             onClose();
             onActionComplete?.();
         } catch { setError("Could not cancel request. Please try again."); }
@@ -183,8 +116,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
     const handleWithdraw = async () => {
         if (!currentUserProfile?.id) return;
         try {
-            await cancelResponseAction(requestId!.toString());
-            await fetchRequest();
+            await withdraw({ requestId: requestId as Id<"bloodRequests"> });
             onActionComplete?.();
         } catch { setError("Could not withdraw. Please try again."); }
     };

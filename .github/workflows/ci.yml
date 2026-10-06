@@ -24,15 +24,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: ./frontend/package-lock.json
       - run: npm ci
-      - name: Type Check
+      - name: Type Check (app and Convex functions)
         run: npm run type-check
+      - name: Backend tests
+        run: npm test
       - name: Build Project
         run: npm run build
         # Placeholders let the build succeed when repository secrets are not set
         # (e.g. on forks); real secrets take precedence when available.
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_placeholder' }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'placeholder' }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL || 'https://placeholder.convex.cloud' }}

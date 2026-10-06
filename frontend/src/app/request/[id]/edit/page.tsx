@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useProfile } from "@/context/AuthContext";
-import { getRequestByIdAction, updateRequestAction } from '@/app/actions/request.actions';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../../../../convex/_generated/api';
+import type { Id } from '../../../../../convex/_generated/dataModel';
+import { toRequestArgs } from '@/lib/convex-adapters';
 import { AlertCircle, MapPin, Phone, User, Droplet, ArrowLeft, Save, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -34,7 +37,9 @@ export default function EditRequestPage() {
     const router = useRouter();
     const { user, isLoading: isLoaded } = useProfile();
     
-    const [loading, setLoading] = useState(true);
+    const request = useQuery(api.requests.get, params.id ? { id: String(params.id) } : 'skip');
+    const updateRequest = useMutation(api.requests.update);
+    const loading = request === undefined;
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,42 +56,26 @@ export default function EditRequestPage() {
     });
 
     useEffect(() => {
-        const fetchRequest = async () => {
-            try {
-                const response = await getRequestByIdAction(params.id as string);
-                
-                // Security check
-                if (response.requester_id !== user?.id) {
-                    router.push('/dashboard');
-                    return;
-                }
-
-                setFormData({
-                    blood_group: response.blood_group,
-                    units: response.units,
-                    patient_name: response.patient_name || '',
-                    hospital_name: response.hospital_name || '',
-                    city: response.city || '',
-                    contact_phone: response.contact_phone || '',
-                    requester_relation: response.requester_relation || 'MYSELF',
-                    urgency_level: response.urgency_level || 'TODAY',
-                    note: response.note || ''
-                });
-            } catch (err: any) {
-                setError(err.message || 'Failed to load request');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (isLoaded) {
-            if (user) {
-                fetchRequest();
-            } else {
-                router.push('/');
-            }
-        }
-    }, [isLoaded, user, params.id, router]);
+        if (!isLoaded) return;
+        if (!user) { router.push('/'); return; }
+        if (request === undefined) return;
+        if (request === null) { setError('Request not found'); return; }
+        // Only the requester may edit.
+        if (request.requester_id !== user.id) { router.push('/dashboard'); return; }
+        setFormData({
+            blood_group: request.blood_group,
+            units: request.units,
+            patient_name: request.patient_name || '',
+            hospital_name: request.hospital_name || '',
+            city: request.city || '',
+            contact_phone: request.contact_phone || '',
+            requester_relation: request.requester_relation || 'MYSELF',
+            urgency_level: request.urgency_level || 'TODAY',
+            note: request.note || ''
+        });
+        // Load the form once; later live updates must not overwrite edits in progress.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoaded, user?.id, request === undefined, request === null]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,7 +83,9 @@ export default function EditRequestPage() {
         setError(null);
 
         try {
-            await updateRequestAction(params.id as string, formData as any);
+            // Blood group is fixed once alerts have gone out.
+            const { bloodGroup: _bg, ...args } = toRequestArgs(formData) as Record<string, unknown>;
+            await updateRequest({ id: params.id as Id<'bloodRequests'>, ...args });
             router.push(`/request/${params.id}`);
         } catch (err: any) {
             setError(err.message || 'Failed to update request. Please try again.');

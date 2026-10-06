@@ -1,48 +1,12 @@
+# The database and backend run on Convex (cloud or self-hosted), so only the app is containerised.
 services:
-  db:
-    image: postgis/postgis:15-3.3
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: bloodrelay
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./supabase_setup.sql:/docker-entrypoint-initdb.d/init.sql
-
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL}
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-      - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - MATCHING_ENGINE_URL=http://matching-engine:9000
-    depends_on:
-      - matching-engine
-
-
-
-  matching-engine:
-    build: ./matching-engine
-    ports:
-      - "9000:9000"
-    volumes:
-      - ./matching-engine:/app
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - CORS_ORIGINS=${CORS_ORIGINS:-*}
-    depends_on:
-      - db
-
-networks:
-  default:
-    name: bloodrelay-network
-
-volumes:
-  pgdata:
+      - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
+      - GROQ_API_KEY=${GROQ_API_KEY}

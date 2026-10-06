@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useProfile } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { getProfileAction, updateProfileAction } from "@/app/actions/donor.actions";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -133,7 +132,7 @@ function InfoRow({
 
 /* ── Page ─────────────────────────────────────────────────── */
 export default function ProfilePage() {
-    const { user, profile: authProfile, isLoading: authLoading } = useProfile();
+    const { user, profile: authProfile, isLoading: authLoading, updateProfile } = useProfile();
     const router = useRouter();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -148,14 +147,12 @@ export default function ProfilePage() {
         if (authLoading) return;
         if (!user) { router.push("/login"); return; }
 
-        getProfileAction()
-            .then((p: any) => {
-                setProfile(p as UserProfile);
-                setFormData({ blood_group: p?.blood_group || "", location: p?.location || "" });
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false));
-    }, [authLoading, user, router]);
+        if (!authProfile) return;
+        const p = { ...authProfile, location: authProfile.city ?? "" };
+        setProfile(p as unknown as UserProfile);
+        if (!isEditing) setFormData({ blood_group: p.blood_group || "", location: p.location || "" });
+        setLoading(false);
+    }, [authLoading, user, authProfile, isEditing, router]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -163,7 +160,7 @@ export default function ProfilePage() {
         setSaving(true);
         setError(null);
         try {
-            const updated = await updateProfileAction(formData as any);
+            await updateProfile({ blood_group: formData.blood_group as any, city: formData.location });
             setProfile((p) => ({ ...p!, ...formData }));
             setSuccessMsg("Profile updated.");
             setIsEditing(false);
@@ -180,7 +177,7 @@ export default function ProfilePage() {
         const next = !profile.is_available_donor;
         setProfile((p) => p ? { ...p, is_available_donor: next } : p);
         try {
-            await updateProfileAction({ is_available_donor: next });
+            await updateProfile({ is_available_donor: next });
         } catch {
             setProfile((p) => p ? { ...p, is_available_donor: !next } : p);
         }

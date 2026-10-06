@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useProfile } from "@/context/AuthContext";
-import { getProfileAction, getNearbyDonorsAction, getResponsesForRequestAction, submitDonorResponseAction } from "@/app/actions/donor.actions";
-import { getRequestByIdAction, updateRequestAction } from "@/app/actions/request.actions";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import {
   AlertCircle, Phone, ArrowLeft, Heart, Share2, Shield,
   CheckCircle, XCircle, Map, MessageCircle
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertService } from "@/services/alert.service";
 import { staggerContainer, slideUpFade, fadeIn } from "@/lib/motion";
 
 import { MissionStatusCard } from "@/components/request/MissionStatusCard";
@@ -68,13 +68,35 @@ export default function RequestDetailPage() {
   const router   = useRouter();
   const { user, profile: authProfile, isLoading: isLoaded } = useProfile();
 
-  const [request,            setRequest]            = useState<BloodRequest | null>(null);
-  const [donors,             setDonors]             = useState<MatchingDonor[]>([]);
-  const [acceptedDonors,     setAcceptedDonors]     = useState<any[]>([]);
-  const [loading,            setLoading]            = useState(true);
+  const requestData = useQuery(api.requests.get, params.id ? { id: String(params.id) } : "skip");
+  const request = (requestData ?? null) as unknown as BloodRequest | null;
+  const requestId = requestData?.id as Id<"bloodRequests"> | undefined;
+  const responsesData = useQuery(api.responses.listForRequest, requestId ? { requestId } : "skip");
+  const acceptedDonors = useMemo(
+    () => (responsesData ?? []).filter((r) => r.status !== "CANCELLED") as any[],
+    [responsesData],
+  );
+  const isOwnRequest = !!requestData && !!authProfile && requestData.requester_id === authProfile.id;
+  const nearbyData = useQuery(
+    api.donors.nearbyForRequest,
+    requestId && isOwnRequest && requestData?.status === "searching" ? { requestId, radiusKm: 20 } : "skip",
+  );
+  const donors = useMemo<MatchingDonor[]>(
+    () => (nearbyData ?? []).map((d) => ({
+      id: d.id as any, name: d.full_name, blood_group: d.blood_group,
+      city: "Nearby", phone_number: "",
+      distance_km: Math.round(d.distance_meters / 100) / 10,
+    })),
+    [nearbyData],
+  );
+  const respond = useMutation(api.responses.respond);
+  const cancelRequest = useMutation(api.requests.cancel);
+  const fulfillRequest = useMutation(api.requests.fulfill);
+  const loading = requestData === undefined;
+  const currentUserProfile = authProfile;
   const [accepting,          setAccepting]          = useState(false);
-  const [currentUserProfile, setCurrentUserProfile] = useState<any | null>(null);
-  const [error,              setError]              = useState<string | null>(null);
+  const [actionError,        setError]              = useState<string | null>(null);
+  const error = actionError ?? (requestData === null ? "Request not found or no longer available." : null);
   const [confirmingCancel,   setConfirmingCancel]   = useState(false);
   const [elapsedMs,          setElapsedMs]          = useState(0);
 
@@ -87,88 +109,14 @@ export default function RequestDetailPage() {
     return () => clearInterval(id);
   }, [request]);
 
-  // Data fetch
-  useEffect(() => {
-    const fetchRequest = async () => {
-      try {
-        const data = await getRequestByIdAction(params.id as string);
-        setRequest(data as any);
-
-        if (data.status === "searching") {
-          try {
-            const locMatch = data.location?.match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
-            if (locMatch) {
-              const lng = parseFloat(locMatch[1]);
-              const lat = parseFloat(locMatch[2]);
-              const nearby = await getNearbyDonorsAction(lat, lng, 20, data.blood_group);
-              setDonors(
-                nearby.map((d: any) => ({
-                  id: d.id, name: d.full_name, blood_group: d.blood_group,
-                  city: "Nearby", phone_number: d.phone,
-                  distance_km: Math.round(d.distance_meters / 100) / 10,
-                }))
-              );
-            }
-          } catch { /* silent */ }
-        }
-
-        try {
-          const responses = await getResponsesForRequestAction(params.id as string);
-          setAcceptedDonors(responses);
-        } catch { /* silent */ }
-      } catch {
-        setError("Request not found or no longer available.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchProfile = async () => {
-      if (!user?.id) return;
-      try {
-        const profile = await getProfileAction();
-        setCurrentUserProfile(profile);
-      } catch { /* silent */ }
-    };
-
-    if (params.id) fetchRequest();
-    if (isLoaded && user) fetchProfile();
-
-    // Supabase realtime for donor responses
-    let channel: any;
-    const setupRealtime = async () => {
-      const { supabaseClient } = await import("@/lib/supabase/client");
-      channel = supabaseClient
-        .channel(`request_${params.id}_responses`)
-        .on("postgres_changes", {
-          event: "*", schema: "public", table: "donor_responses",
-          filter: `request_id=eq.${params.id}`,
-        }, async () => {
-          try {
-            const responses = await getResponsesForRequestAction(params.id as string);
-            setAcceptedDonors(responses);
-          } catch { /* silent */ }
-        })
-        .subscribe();
-    };
-    if (params.id) setupRealtime();
-    return () => { if (channel) channel.unsubscribe(); };
-  }, [params.id, user, isLoaded]);
-
   // Actions
   const handleAcceptRequest = async () => {
     if (!currentUserProfile?.id) { router.push("/settings"); return; }
+    if (!requestId) return;
     setAccepting(true);
     try {
-      await submitDonorResponseAction(params.id as string, 'ACCEPTED');
-      if (request?.contact_phone) {
-        await AlertService.sendSMS(
-          request.contact_phone,
-          `Blood Axis ALERT: ${currentUserProfile.full_name || "A donor"} has offered to donate blood for ${request?.patient_name}. They may contact you shortly.`
-        );
-      }
-      const responses = await getResponsesForRequestAction(params.id as string);
-      setAcceptedDonors(responses);
+      // The server notifies the requester (SMS + in-app) when the response is recorded.
+      await respond({ requestId, status: "ACCEPTED" });
     } catch (err: any) {
       setError(err.message || "We could not process this right now. Please try again.");
     } finally {
@@ -178,8 +126,9 @@ export default function RequestDetailPage() {
 
   const handleCancelRequest = async () => {
     setConfirmingCancel(false);
+    if (!requestId) return;
     try {
-      await updateRequestAction(params.id as string, { status: "cancelled" });
+      await cancelRequest({ id: requestId });
       router.push("/dashboard");
     } catch {
       setError("Could not cancel request. Please try again.");
@@ -187,8 +136,9 @@ export default function RequestDetailPage() {
   };
 
   const handleCompleteRequest = async () => {
+    if (!requestId) return;
     try {
-      await updateRequestAction(params.id as string, { status: "fulfilled" });
+      await fulfillRequest({ id: requestId });
       router.push("/dashboard");
     } catch {
       setError("Could not mark as completed. Please try again.");
