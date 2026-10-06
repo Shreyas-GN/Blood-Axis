@@ -1,5 +1,5 @@
 -- ============================================================
--- BloodRelay V2 — Phase 1 Migration
+-- BloodAxis V2 — Phase 1 Migration
 -- Run this in Supabase SQL Editor against your live instance.
 -- Safe to run on a fresh or existing database.
 -- ============================================================

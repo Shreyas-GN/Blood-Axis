@@ -6,15 +6,15 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodRelay ErrorState
+   BloodAxis ErrorState
    ─ Apple-style: never blame the user. Never say "Something
      went wrong." Always explain three things:
        1. What happened
-       2. What BloodRelay is doing about it
+       2. What BloodAxis is doing about it
        3. What the user can do next
    ─ Tone: calm, reassuring. Reduces anxiety rather than adding to it.
    ─ Design system rule: "Every interaction communicates:
-     You are not alone. BloodRelay is working for you."
+     You are not alone. BloodAxis is working for you."
    ───────────────────────────────────────────────────────────── */
 
 export type ErrorType =

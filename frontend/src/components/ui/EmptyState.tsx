@@ -6,7 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/Button";
 import Link from "next/link";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodRelay EmptyState
+   BloodAxis EmptyState
    ─ Tone: warm, human, reassuring. Never cold or abandoned.
    ─ Design system rule: users should never feel the system
      stopped or has nothing to offer them.

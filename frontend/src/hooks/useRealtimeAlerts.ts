@@ -38,7 +38,7 @@ export function useRealtimeAlerts() {
                 new Notification(title, { 
                     body, 
                     icon: '/favicon.ico',
-                    tag: 'bloodrelay-alert',
+                    tag: 'bloodaxis-alert',
                     renotify: true,
                     silent: !isImmediate
                 } as any);

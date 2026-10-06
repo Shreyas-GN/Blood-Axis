@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodRelay Input
+   BloodAxis Input
    ─ Minimum height 44px (accessible touch target)
    ─ Radius: --radius-input (16px)
    ─ Border: --color-border token
