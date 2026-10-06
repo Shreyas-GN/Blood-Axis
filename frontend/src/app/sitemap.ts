@@ -1,26 +1,9 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://bloodrelay.netlify.app';
-
   return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/emergency`,
-      lastModified: new Date(),
-      changeFrequency: 'always',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 0.8,
-    },
+    { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE_URL}/emergency`, changeFrequency: "monthly", priority: 0.9 },
   ];
 }

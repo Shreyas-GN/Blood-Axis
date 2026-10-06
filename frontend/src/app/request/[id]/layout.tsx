@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   } catch (error) {
     return {
-      title: 'Emergency Blood Request | BloodAxis',
+      title: 'Emergency Blood Request',
     };
   }
 }

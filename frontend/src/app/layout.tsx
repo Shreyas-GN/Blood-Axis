@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Space_Grotesk, Space_Mono, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from '@/context/AuthContext';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL, THEME_COLOR } from '@/lib/site';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,63 +42,31 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "BloodRelay | Emergency Blood Coordination Platform",
-    template: "%s | BloodRelay"
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "BloodRelay connects blood donors with families in urgent need within seconds. No delays, no middlemen—just direct, life-saving coordination.",
-  keywords: ["blood donation", "emergency blood", "find blood donor", "blood bank", "emergency coordination", "donate blood"],
-  authors: [{ name: "BloodRelay Team" }],
-  metadataBase: new URL("https://bloodrelay.netlify.app"),
-  alternates: {
-    canonical: "/",
-  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: ["blood donor near me", "emergency blood", "find blood donor", "blood donation", "urgent blood request", "O negative blood needed", "blood donors India"],
+  authors: [{ name: `${SITE_NAME} Team` }],
   openGraph: {
-    title: "BloodRelay | Emergency Blood Coordination",
-    description: "Bridging the gap between donors and those in need. Fast, trusted, and free.",
-    url: "https://bloodrelay.netlify.app",
-    siteName: "BloodRelay",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "BloodRelay - Emergency Blood Coordination",
-      },
-    ],
-    locale: "en_US",
     type: "website",
+    locale: "en_IN",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "BloodRelay | Find Blood Donors Near You",
-    description: "Connect with matching blood donors in seconds during emergencies.",
-    images: ["/og-image.png"],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  }
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "EmergencyService",
-  "name": "BloodRelay",
-  "url": "https://bloodrelay.netlify.app",
-  "logo": "https://bloodrelay.netlify.app/logo.png",
-  "description": "Connecting blood donors with recipients in real-time emergency situations.",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Bangalore",
-    "addressCountry": "IN"
-  },
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "contactType": "Emergency Blood Support",
-    "url": "https://bloodrelay.netlify.app/emergency"
-  }
+export const viewport: Viewport = {
+  themeColor: THEME_COLOR,
 };
 
 export default function RootLayout({
@@ -107,13 +76,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          suppressHydrationWarning
-        />
-      </head>
       <body className="antialiased">
         <AuthProvider>
           {children}

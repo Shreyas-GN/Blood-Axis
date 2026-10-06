@@ -33,6 +33,8 @@ export async function updateSession(request: NextRequest) {
   // Define public routes
   const isPublicRoute = (path: string) => {
     return path === '/' || 
+           // SEO and metadata files must be reachable by crawlers without a session
+           ['/sitemap.xml', '/robots.txt', '/opengraph-image', '/icon', '/apple-icon'].includes(path) ||
            path.startsWith('/login') || 
            path.startsWith('/auth/callback') ||
            path.startsWith('/emergency') || 

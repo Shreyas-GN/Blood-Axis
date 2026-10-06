@@ -1,17 +1,14 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: [
-        '/dashboard/',
-        '/profile/',
-        '/settings/',
-        '/api/',
-      ],
+      userAgent: "*",
+      allow: ["/", "/emergency"],
+      disallow: ["/api/", "/dashboard", "/profile", "/settings", "/notifications", "/activity", "/request/", "/hospital"],
     },
-    sitemap: 'https://bloodrelay.netlify.app/sitemap.xml',
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }
