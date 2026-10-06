@@ -56,7 +56,7 @@ const ERROR_DEFAULTS: Record<
   location: {
     title: "We couldn't get your location",
     message:
-      "BloodRelay needs your location to find nearby donors. You can enter it manually below instead.",
+      "BloodAxis needs your location to find nearby donors. You can enter it manually below instead.",
     icon: MapPin,
     iconClassName: "text-[var(--color-warning)]",
   },
@@ -68,7 +68,7 @@ const ERROR_DEFAULTS: Record<
     iconClassName: "text-[var(--color-text-muted)]",
   },
   server: {
-    title: "BloodRelay is taking longer than expected",
+    title: "BloodAxis is taking longer than expected",
     message:
       "Our servers are responding slowly right now. Your information is safe — please wait a moment and try again.",
     icon: RefreshCw,
@@ -77,14 +77,14 @@ const ERROR_DEFAULTS: Record<
   permission: {
     title: "Permission required",
     message:
-      "BloodRelay needs this permission to work properly. You can update it in your device settings and return here.",
+      "BloodAxis needs this permission to work properly. You can update it in your device settings and return here.",
     icon: AlertTriangle,
     iconClassName: "text-[var(--color-warning)]",
   },
   generic: {
     title: "We hit an unexpected issue",
     message:
-      "BloodRelay is still working. This usually resolves on its own — tap below to try again, or return to the dashboard.",
+      "BloodAxis is still working. This usually resolves on its own — tap below to try again, or return to the dashboard.",
     icon: RefreshCw,
     iconClassName: "text-[var(--color-text-muted)]",
   },

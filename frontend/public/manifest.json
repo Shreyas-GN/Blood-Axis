@@ -1,6 +1,6 @@
 {
-  "name": "BloodRelay",
-  "short_name": "BloodRelay",
+  "name": "BloodAxis",
+  "short_name": "BloodAxis",
   "description": "Real-time emergency blood donation platform",
   "start_url": "/",
   "display": "standalone",

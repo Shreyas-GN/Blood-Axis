@@ -44,7 +44,7 @@ function buildEvents(
     events.push({
       id: "scanning",
       emoji: "📡",
-      text: "BloodRelay began scanning nearby donors",
+      text: "BloodAxis began scanning nearby donors",
       timeAgo: ago(min - 1),
     });
   }
