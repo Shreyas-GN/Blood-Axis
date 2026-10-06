@@ -1,167 +1,73 @@
 # BloodAxis
 
-Emergency blood coordination platform that connects hospitals, patients, and donors in real time.
+**When someone needs blood, every minute counts. BloodAxis finds the people who can give it — fast.**
+
+BloodAxis is an emergency blood coordination platform. It connects families, hospitals, and nearby donors in real time, so a request for blood reaches the right people within moments instead of being lost in a flurry of phone calls and forwarded messages.
 
 ---
 
-## Tech Stack
+## The problem
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js 16, TypeScript, Tailwind CSS, Framer Motion |
-| Auth | Clerk |
-| Backend | Django 5, Django REST Framework, Gunicorn |
-| Matching Engine | FastAPI, PostGIS spatial queries |
-| Database | Supabase (PostgreSQL + PostGIS) |
-| Realtime | Supabase Realtime |
-| Push Notifications | Firebase Cloud Messaging |
-| Maps | MapLibre GL |
-| AI | Groq SDK |
-| Infra | Docker Compose, Vercel (frontend), Render/Railway (backend) |
+When a patient needs blood urgently, families usually start the same scramble: calling relatives, posting in WhatsApp groups, asking around the hospital. It is slow, stressful, and there is no way to know who is actually nearby, who has the right blood group, or whether anyone is on the way.
 
----
+## What BloodAxis does
 
-## Repository Structure
+1. **Ask for blood in under a minute.** Pick the blood group, how many units, and how urgent it is. You can even type or paste a plain message like *"Need 2 units O positive urgently at City Hospital"* and BloodAxis fills in the form for you.
+2. **Reach the right donors automatically.** BloodAxis looks for compatible donors close to the hospital and alerts them straight away with a push notification.
+3. **Watch help arrive.** Donors respond, and the request page updates live, so you can see who has accepted and how far away they are.
+4. **Close the loop.** Once the need is met, the request is marked complete and donors are recognised in their activity history.
+
+## Who it's for
+
+- **Families and patients** who need blood and don't know where to turn.
+- **Donors** who are willing to help and want to be called only when it matters and only when they're close.
+- **Hospitals** that want a verified, organised way to raise and track blood requests.
+
+## Highlights
+
+- **Live emergency map** showing active requests and donors around you.
+- **Smart nearby matching** that ranks donors by distance and blood group.
+- **Instant alerts** through push notifications, with an in-app notification bell.
+- **Plain-language requests**, powered by AI that reads a message and turns it into a ready-to-send request.
+- **Hospital dashboard** with a verification step, so requests come from trusted sources.
+- **Donor profiles and activity feed** to track availability and past donations.
+- **Phone verification** at sign-in to keep the community genuine.
+- **Works on your phone**, with a mobile-friendly layout and bottom navigation.
+
+## How it works, in one picture
 
 ```
-frontend/           # Next.js app
-  src/
-    app/            # Pages and API routes (App Router)
-    components/
-      auth/         # OTPVerification
-      dashboard/    # Dashboard widgets
-      landing/      # Landing page sections
-      map/          # Map, EmergencyMap, overlays
-      nav/          # BottomNav
-      notifications/# NotificationBell, NotificationPrompt
-      request/      # Request detail components
-      ui/           # Shared UI primitives
-      wizard/       # Request creation wizard steps
-    hooks/          # useNotifications, useRealtimeAlerts
-    lib/            # Supabase, Firebase, API, utils
-    services/       # Business logic services
-    types/          # TypeScript types
-
-backend/            # Django REST API
-  config/           # Settings, URLs, WSGI/ASGI
-  core/             # Models, views, serializers, auth
-
-matching-engine/    # FastAPI geospatial matching service
-  app/
-    core/           # Database connection
-    models/         # Donor model
-    routes/         # Match endpoints
-    services/       # Matching algorithm, notifier
-
-database/           # Supabase SQL schema and migrations
+Request raised  →  Nearby compatible donors found  →  Alerts sent  →  Donors respond  →  Blood arranged
 ```
 
----
+## Try it yourself
 
-## Environment Variables
+Live site: **https://bloodaxis.netlify.app**
 
-### Frontend (`frontend/.env.local`)
+## Run it locally
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_VAPID_KEY=
-GROQ_API_KEY=
-BACKEND_URL=http://localhost:8000
-MATCHING_ENGINE_URL=http://localhost:9000
-TELEGRAM_BOT_TOKEN=
-```
-
-### Backend (`backend/.env`)
-
-```env
-DATABASE_URL=
-DJANGO_SECRET_KEY=
-CLERK_SECRET_KEY=
-MATCHING_ENGINE_URL=http://localhost:9000
-ALLOWED_HOSTS=localhost,127.0.0.1
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-```
-
-### Matching Engine (`matching-engine/.env`)
-
-```env
-DATABASE_URL=
-CORS_ORIGINS=http://localhost:3000,http://localhost:8000
-```
-
----
-
-## Running Locally
-
-### Option A — Docker Compose (full stack)
+The quickest way is Docker:
 
 ```bash
 docker-compose up --build
 ```
 
-| Service | URL |
+Then open http://localhost:3000.
+
+You'll need accounts and keys for the services BloodAxis relies on (sign-in, database, notifications, maps, AI). Copy the example environment files in each folder and fill them in.
+
+## What's inside
+
+| Folder | Purpose |
 |---|---|
-| Frontend | http://localhost:3000 |
-| Django API | http://localhost:8000 |
-| FastAPI Engine | http://localhost:9000 |
+| `frontend/` | The app people use: landing page, request wizard, map, dashboards |
+| `matching-engine/` | The service that finds nearby donors for a request |
+| `database/` | The database schema |
 
-### Option B — Individual services
+## Built with
 
-**Frontend**
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-**Django backend**
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-**FastAPI matching engine**
-
-```bash
-cd matching-engine
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 9000
-```
+Next.js, Django, FastAPI, Supabase (PostgreSQL + PostGIS), Clerk, Firebase Cloud Messaging, MapLibre, and Groq.
 
 ---
 
-## Database
-
-SQL schema and migration files are in `database/`.
-
-Apply them to your Supabase project via the SQL editor or Supabase CLI:
-
-```bash
-supabase db push
-```
-
-PostGIS must be enabled on the Supabase project before applying the schema.
-
----
-
-## Production Deployment
-
-- **Frontend**: Deploy `frontend/` to Vercel. Add all `NEXT_PUBLIC_*` and server-side env vars in the Vercel dashboard.
-- **Backend**: Deploy `backend/` to Render or Railway using `backend/Dockerfile`.
-- **Matching Engine**: Deploy `matching-engine/` using `matching-engine/Dockerfile`. Set `$PORT` env var.
-- **Database**: Use Supabase connection pooler URL (port 6543) in production.
+*Built because no one should wait on a phone call when a life is at stake.*
