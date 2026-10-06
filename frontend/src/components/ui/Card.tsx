@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────────
-   BloodAxis Card System
+   BloodRelay Card System
    ─ All cards use --radius-card (28px). Never mix radius.
    ─ Shadow: --shadow-card (barely visible, intentional)
    ─ No glassmorphism. No heavy shadows. No gradients.

@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getMessaging, Messaging } from "firebase/messaging";
 
-// BloodAxis FIREBASE CONFIG
+// BloodRelay FIREBASE CONFIG
 // Replace these with your project's configuration from the Firebase Console
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

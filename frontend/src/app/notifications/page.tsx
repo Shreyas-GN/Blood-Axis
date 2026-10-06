@@ -85,7 +85,7 @@ export default function NotificationsPage() {
                         <div className="w-px h-4 bg-[var(--color-border-subtle)]" aria-hidden="true" />
                         <Link href="/" className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md">
                             <Droplet className="w-4 h-4 fill-[var(--color-cta)] stroke-[var(--color-cta)]" />
-                            <span className="text-[15px] font-semibold tracking-tight">BloodAxis</span>
+                            <span className="text-[15px] font-semibold tracking-tight">BloodRelay</span>
                         </Link>
                     </div>
                 </nav>

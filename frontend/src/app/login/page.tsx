@@ -206,7 +206,7 @@ export default function LoginPage() {
              <div className="flex h-14 w-14 items-center justify-center bg-[#DC2626]/10 rounded-full mb-4 border border-[#DC2626]/20">
                <Droplet className="w-7 h-7 text-[#DC2626] fill-[#DC2626]" strokeWidth={1} />
              </div>
-             <h1 className="text-3xl font-bold tracking-tight text-white mb-2">BloodAxis</h1>
+             <h1 className="text-3xl font-bold tracking-tight text-white mb-2">BloodRelay</h1>
              <p className="text-center text-sm text-neutral-400">Join the emergency blood coordination network.</p>
           </motion.div>
 

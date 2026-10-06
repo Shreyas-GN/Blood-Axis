@@ -49,7 +49,7 @@ async def run_escalation_logic(data: MatchRequest):
         if donor.get('phone'):
             await send_sms(
                 donor['phone'],
-                f"URGENT: {data.blood_group} blood required at {data.hospital_name}. Please check BloodAxis app.",
+                f"URGENT: {data.blood_group} blood required at {data.hospital_name}. Please check BloodRelay app.",
                 donor_id=donor['id'],
                 request_id=rid,
             )

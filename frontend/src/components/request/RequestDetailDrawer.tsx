@@ -132,7 +132,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
             if (request?.contact_phone) {
                 await AlertService.sendSMS(
                     request.contact_phone,
-                    `BloodAxis ALERT: ${currentUserProfile.full_name || "A donor"} has offered to donate blood for ${request.patient_name}. They may contact you shortly.`
+                    `BloodRelay ALERT: ${currentUserProfile.full_name || "A donor"} has offered to donate blood for ${request.patient_name}. They may contact you shortly.`
                 );
             }
             await logActivityAction(
@@ -605,7 +605,7 @@ export function RequestDetailDrawer({ requestId, onClose, onActionComplete }: Pr
                                     {/* Safety notice */}
                                     <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-card)] text-xs text-[var(--color-base-500)] bg-[var(--color-base-50)] border border-[var(--color-base-200)]">
                                         <Shield className="w-4 h-4 shrink-0 text-[var(--color-base-400)] mt-0.5" />
-                                        <p>BloodAxis does not screen donors or verify medical history. Coordinate with your medical professional before proceeding.</p>
+                                        <p>BloodRelay does not screen donors or verify medical history. Coordinate with your medical professional before proceeding.</p>
                                     </div>
                                 </motion.div>
                             )}

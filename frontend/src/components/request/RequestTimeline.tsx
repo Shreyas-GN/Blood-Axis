@@ -40,7 +40,7 @@ function deriveStages(status: string, donorsNotified: number, elapsedMs: number)
     {
       id: "created",
       label: "Request Created",
-      description: "BloodAxis received your request and began coordinating.",
+      description: "BloodRelay received your request and began coordinating.",
       state: "complete",
     },
     {
